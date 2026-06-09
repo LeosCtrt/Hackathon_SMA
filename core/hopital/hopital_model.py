@@ -1,3 +1,6 @@
+import yaml
+from pathlib import Path
+
 import mesa
 from mesa.space import NetworkGrid
 
@@ -5,26 +8,24 @@ from core.plan.plan_hopital import construire_plan_hdj
 from core.agents.salle import Salle
 from core.agents.soignant import SoignantAgent
 from core.agents.patient import Patient
+from core.agents.environnement import EnvironnementAgent
 
 class HopitalModel(mesa.Model):
     #Modèle de l'Hôpital de Jour.
  
-    #Soignants instanciés (salle assignée à l'init) :
-    # - Dr. Dupont   (Med)     → BMED1   [8h-17h]
-    #  - Dr. Martin   (Med)     → BMED2   [8h-17h]
-    #  - Dr. Blanc    (Med)     → BCHIR   [8h-17h]
-    #  - IDE Bilan    (Paramed) → SOIN    [7h-19h]
-    #  - IDE Chimio   (Paramed) → SCHIM   [7h-19h]
-    
- 
-    # Configuration des soignants : (nom, role, salle, h_debut, h_fin)
-    CONFIGS_SOIGNANTS = [
-        ("Dr. Dupont",  "Med",     "BMED1", 8, 17),
-        ("Dr. Martin",  "Med",     "BMED2", 8, 17),
-        ("Dr. Blanc",   "Med",     "BCHIR", 8, 17),
-        ("IDE Bilan",   "Paramed", "SOIN",  7, 19),
-        ("IDE Chimio",  "Paramed", "SCHIM", 7, 19),
-    ]
+    _YAML_PATH = Path(__file__).parent.parent / "config" / "hdj_metier.yaml"
+
+    @classmethod
+    def _charger_configs_soignants(cls) -> list:
+        """Charge la liste des soignants depuis §configuration_simulation.soignants_demo."""
+        with open(cls._YAML_PATH, encoding="utf-8") as f:
+            cfg = yaml.safe_load(f)
+        raw = cfg["configuration_simulation"]["soignants_demo"]
+        return [
+            (s["nom"], s["type_soignant"], s["salle"],
+             int(s["heure_debut"]), int(s["heure_fin"]))
+            for s in raw
+        ]
  
     def __init__(self, parcours, seed=42):
         super().__init__(rng=seed)
@@ -39,11 +40,11 @@ class HopitalModel(mesa.Model):
  
         # ── Soignants ────────────────────────────────────────────────────
         self.soignants: list[SoignantAgent] = []
-        for nom, role, salle, hd, hf in self.CONFIGS_SOIGNANTS:
-            ag = SoignantAgent(self, nom, role, salle, hd, hf)
+        for nom, type_soignant, salle, hd, hf in self._charger_configs_soignants():
+            ag = SoignantAgent(self, nom, type_soignant, salle, hd, hf)
             self.soignants.append(ag)
             self.grid.place_agent(ag, salle)
-            print(f"  → {role:8s} {nom:12s} affecté à {salle}")
+            print(f"  → {type_soignant:15s} {nom:12s} affecté à {salle}")
  
         # ── Patient ───────────────────────────────────────────────────────
         self.patient = Patient(self, parcours, "ACC")
@@ -51,6 +52,9 @@ class HopitalModel(mesa.Model):
  
         self.historique = []
         self.running = True
+
+        # ── Environnement ─────────────────────────────────────────────────
+        self.env = EnvironnementAgent(self)
  
     # ──────────────────────────────────────────────────────────────────────
     # Interface "admin" invoquée par SoignantAgent
@@ -73,6 +77,8 @@ class HopitalModel(mesa.Model):
     # ──────────────────────────────────────────────────────────────────────
  
     def step(self):
+        self.env.step()
+
         p = self.patient
         idx = min(p.cible_index, len(p.parcours) - 1)
         self.historique.append((self.steps, p.node, p.etat, p.parcours[idx][1]))

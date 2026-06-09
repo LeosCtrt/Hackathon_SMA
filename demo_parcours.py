@@ -83,4 +83,5 @@ def draw(f):
 ani = animation.FuncAnimation(fig, draw, frames=len(frames), interval=160, repeat=True)
 plt.close(fig)
 HTML(ani.to_jshtml())
-ani.save("plan_balade_soignants.gif", writer=animation.PillowWriter(fps=7))
+import os as _os; _os.makedirs("outputs", exist_ok=True)
+ani.save("outputs/plan_balade_soignants.gif", writer=animation.PillowWriter(fps=7))

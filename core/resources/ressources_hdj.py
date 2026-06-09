@@ -1,20 +1,23 @@
 """
-Ressources limitantes HDJ — MVP.
+Ressources limitantes HDJ — chargées depuis core/config/hdj_metier.yaml.
 
-MVP : 2 ressources uniquement (source: YAML §mvp_bottleneck_resources) :
-  - retinographe_001 : 1 rétinographe non mydriatique, catégorie plateau_technique
-  - fauteuil_medicalise : 2 fauteuils médicalisés, catégorie securite_prelevements
+MVP : 2 ressources (§ressources_hdj.mvp_ressources_goulot) :
+  - retinographe_001 : rétinographe non mydriatique, quantite et nom lus depuis YAML
+  - fauteuil_medicalise : fauteuils médicalisés, quantite et nom lus depuis YAML
+
+Interface publique inchangée : create_mvp_resources() retourne
+{"retinographe": ..., "fauteuil": ...} — clés stables pour CoordinateurAgent.
 
 Les ~20 autres équipements du YAML (ECG, IPS, moniteurs, chariot urgence, etc.)
 sont ignorés pour ce MVP. Ils peuvent être ajoutés en instanciant RessourceLimitante
 avec les paramètres correspondants.
-
-Note CAPEX: rétinographe estimé 15 000–20 000 € (source: YAML §mvp_bottleneck_resources)
-→ argument financier pour la démo jury DU.
 """
 
-from dataclasses import dataclass, field
+import yaml
+from pathlib import Path
 from typing import Dict
+
+_YAML_PATH = Path(__file__).parent.parent / "config" / "hdj_metier.yaml"
 
 
 class RessourceLimitante:
@@ -63,19 +66,23 @@ class RessourceLimitante:
 
 def create_mvp_resources() -> Dict[str, RessourceLimitante]:
     """
-    Instancie les deux ressources MVP définies dans le YAML.
+    Instancie les deux ressources MVP depuis YAML §ressources_hdj.mvp_ressources_goulot.
 
-    Source: YAML equipements_hdj_endocrino.yaml §mvp_bottleneck_resources
-      retinographe_001  : qty=1, criticality=high
-      fauteuil_medicalise : qty=2, criticality=high
+    Clés retournées (stables) : "retinographe" et "fauteuil".
+    Nom et quantité chargés depuis le YAML — aucune valeur hardcodée.
     """
+    with open(_YAML_PATH, encoding="utf-8") as f:
+        cfg = yaml.safe_load(f)
+    mvp = cfg["ressources_hdj"]["mvp_ressources_goulot"]
+    retino   = mvp["retinographe"]
+    fauteuil = mvp["fauteuil_medicalise"]
     return {
         "retinographe": RessourceLimitante(
-            name="Rétinographe non mydriatique (×1)",
-            total_units=1,
+            name=f"{retino['nom']} (×{retino['quantite']})",
+            total_units=int(retino["quantite"]),
         ),
         "fauteuil": RessourceLimitante(
-            name="Fauteuil médicalisé / lit porte (×2)",
-            total_units=2,
+            name=f"{fauteuil['nom']} (×{fauteuil['quantite']})",
+            total_units=int(fauteuil["quantite"]),
         ),
     }

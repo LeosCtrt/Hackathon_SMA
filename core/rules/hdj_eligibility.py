@@ -39,8 +39,26 @@ Limites EXPLICITES :
   - Règles médicales absentes des documents disponibles → non codées
 """
 
+import yaml
+from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Literal, List, Tuple
+
+_YAML_PATH = Path(__file__).parent.parent / "config" / "hdj_metier.yaml"
+
+
+def _load_eligibility_config(yaml_path: Path = _YAML_PATH) -> dict:
+    """Charge le référentiel métier depuis hdj_metier.yaml."""
+    if not yaml_path.exists():
+        raise FileNotFoundError(
+            f"Référentiel métier introuvable : {yaml_path}\n"
+            "Vérifier que core/config/hdj_metier.yaml est présent dans le repo."
+        )
+    with open(yaml_path, encoding="utf-8") as f:
+        return yaml.safe_load(f)
+
+
+_cfg = _load_eligibility_config()
 
 # ── Dimension 1 : contexte administratif courant ───────────────────────────
 CareContext = Literal[
@@ -93,39 +111,41 @@ CandidatePathway = Literal[
     "none",
 ]
 
-# ── Actes CCAM ────────────────────────────────────────────────────────────
-# Source: [YAML] §bilan_annuel_complications, acte BLQP010 cité explicitement
-ACTES_RETINOGRAPHE = {
-    "BGQP007",  "BZQK001",  "BLQP010",  "BDQP003",
-}
-# Source: [YAML] §tests_dynamiques_endocriniens, acte PZQP018 cité explicitement
-ACTES_FAUTEUIL = {"PZQP018"}
-# Actes présents dans les données mais hors périmètre endocrino HDJ — [DATA]
-ACTES_HORS_SCOPE = {
-    "YYYY088", "ZCQJ003", "ZCQM003", "JQQP001", "JQGD012",
-    "YYYY600", "EAQH002", "NFQK001", "NDQK001",
-}
+# ── Actes CCAM ─────────────────────────────────────────────────────────────
+# Source : [YAML] §ressources_hdj.mvp_ressources_goulot.*.actes_ccam
+ACTES_RETINOGRAPHE: set = set(
+    str(c) for c in _cfg["ressources_hdj"]["mvp_ressources_goulot"]["retinographe"]["actes_ccam"]
+)
+ACTES_FAUTEUIL: set = set(
+    str(c) for c in _cfg["ressources_hdj"]["mvp_ressources_goulot"]["fauteuil_medicalise"]["actes_ccam"]
+)
+# Source : [YAML] §actes_et_taches.actes_hors_scope_hdj.codes
+ACTES_HORS_SCOPE: set = set(
+    str(c) for c in _cfg["actes_et_taches"]["actes_hors_scope_hdj"]["codes"]
+)
 
-# ── Unités / spécialités ──────────────────────────────────────────────────
-UNITES_HDJ_EXPLICITES = {"HDJ CONSULTATION"}
-SPECIALITES_HORS_ENDOCRINO = {
-    "GYNECOLOGIE OBSTETRIQUE",
-    "GYNECOLOGIE OBSTETRIQUE ET GYNECOLOGIE MEDICALE",
-    "SAGE-FEMME",
-}
+# ── Unités / spécialités ────────────────────────────────────────────────────
+# Source : [YAML] §codes_diagnostics
+UNITES_HDJ_EXPLICITES: set = set(_cfg["codes_diagnostics"]["unites_hdj_explicites"])
+SPECIALITES_HORS_ENDOCRINO: set = set(_cfg["codes_diagnostics"]["specialites_hors_endocrino"])
 
-# ── Préfixes CIM-10 ───────────────────────────────────────────────────────
-PREFIXES_DIABETE       = ("E10", "E11", "E13", "E14")
-PREFIXES_THYROIDE      = ("E03", "E04", "E07", "E05", "E06")
-PREFIXES_OBESITE       = ("E66",)
-PREFIXES_TROUBLES_ENDO = ("E20","E21","E22","E23","E24","E25","E26","E27","E28","E29","E34")
-PREFIXES_METABOLIQUE   = ("E16","E46","E61","E64","E74","E75","E83","E87","E88")
+# ── Préfixes CIM-10 — convertis en tuple pour str.startswith() ──────────────
+# Source : [YAML] §codes_diagnostics.*
+_diag_cfg = _cfg["codes_diagnostics"]
+PREFIXES_DIABETE:       tuple = tuple(str(p) for p in _diag_cfg["diabete"])
+PREFIXES_THYROIDE:      tuple = tuple(str(p) for p in _diag_cfg["thyroide"])
+PREFIXES_OBESITE:       tuple = tuple(str(p) for p in _diag_cfg["obesite"])
+PREFIXES_TROUBLES_ENDO: tuple = tuple(str(p) for p in _diag_cfg["troubles_endocriniens"])
+PREFIXES_METABOLIQUE:   tuple = tuple(str(p) for p in _diag_cfg["metabolique"])
 
-DUREES_MIN = {
-    "consultation_simple": 30,
-    "bilan_diabete": 60,
-    "retinographe": 90,
-    "fauteuil_dynamique": 180,
+# ── Durées estimées (minutes) — à valider équipe médicale ───────────────────
+# Source : [YAML] §actes_et_taches.actes_ccam_hdj_endocrino.*.duree_min
+_actes_cfg = _cfg["actes_et_taches"]["actes_ccam_hdj_endocrino"]
+DUREES_MIN: dict = {
+    "consultation_simple": int(_actes_cfg["consultation_simple"]["duree_min"]),
+    "bilan_diabete":       int(_actes_cfg["bilan_annuel_diabete"]["duree_min"]),
+    "retinographe":        int(_actes_cfg["retinographie"]["duree_min"]),
+    "fauteuil_dynamique":  int(_actes_cfg["test_dynamique_endocrinien"]["duree_min"]),
 }
 
 _ALL_ENDOCRINO_PREFIXES_3 = frozenset(

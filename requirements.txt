@@ -1,0 +1,7 @@
+PyYAML
+mesa
+networkx
+matplotlib
+ipython
+pandas
+openpyxl

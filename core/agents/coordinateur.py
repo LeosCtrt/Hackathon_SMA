@@ -39,7 +39,10 @@ import pandas as pd
 
 from core.rules.hdj_eligibility import EligibilityResult, is_hdj_eligible
 from core.resources.ressources_hdj import RessourceLimitante, create_mvp_resources
-from core.simulation.scheduler import Scheduler, ScheduledEntry, UnscheduledEntry
+from core.simulation.scheduler import (
+    Scheduler, ScheduledEntry, UnscheduledEntry,
+    DEFAULT_N_DAYS, DEFAULT_MAX_PARALLEL, SLOT_DURATION_MIN,
+)
 
 
 @dataclass
@@ -102,7 +105,7 @@ class CoordinateurAgent:
       3. print_dashboard() — tableau de bord A + B
     """
 
-    def __init__(self, n_days: int = 5, max_parallel: int = 6):
+    def __init__(self, n_days: int = DEFAULT_N_DAYS, max_parallel: int = DEFAULT_MAX_PARALLEL):
         # Deux schedulers INDÉPENDANTS — ressources séparées entre les deux simulations
         self.resources_A: Dict[str, RessourceLimitante] = create_mvp_resources()
         self.resources_B: Dict[str, RessourceLimitante] = create_mvp_resources()
@@ -366,7 +369,7 @@ class CoordinateurAgent:
             print(f"  reorg_potential      : {el.reorganization_potential}")
             print(f"  scheduling_A         : {record.scheduling_status_A}")
             print(f"  scheduling_B         : {record.scheduling_status_B}")
-            print(f"  Créneau              : {sc.start_label} → {sc.end_label}  ({sc.duration_slots * 30} min)")
+            print(f"  Créneau              : {sc.start_label} → {sc.end_label}  ({sc.duration_slots * SLOT_DURATION_MIN} min)")
             res_str = ", ".join(el.required_resources) if el.required_resources else "—"
             print(f"  Ressources           : {res_str}")
             print(f"\n  reasons :")

@@ -1,0 +1,1026 @@
+# ============================================================
+# core/config/hdj_metier.yaml
+# Référentiel métier global HDJ endocrino-diabétologie — CHU Guyane
+#
+# Sources intégrées :
+#   [EQUIP]  ~/claude_context_Hackathon_SMA/equipements_hdj_endocrino.yaml
+#            (mail Ahmed EL BAHRI, 2026-06-08)
+#   [RES]    core/resources/ressources_hdj.py
+#   [ELIG]   core/rules/hdj_eligibility.py
+#   [SCHED]  core/simulation/scheduler.py
+#   [SOIGN]  core/agents/soignant.py
+#   [MODEL]  core/hopital/hopital_model.py
+#   [DEMO]   demo_coordinateur.py
+#   [DOCX]   contraintes_agents_interactions.docx
+#   [MCO26]  guide_methodo_mco_2026.pdf
+#   [DEFI5]  Défi 5 - HDJ Agent - ELBAHRI Ahmed et BELIN Caroline.pdf
+#
+# Règle : "a_parametrer" = information absente ou à valider équipe médicale.
+#         Aucune valeur inventée.
+# ============================================================
+
+metadata:
+  project: "HDJ Agent"
+  repository: "Hackathon_SMA"
+  specialty: "Endocrinologie-Diabétologie"
+  etablissement: "CHU Guyane"
+  document_type: "Référentiel métier global — SMA HDJ"
+  porteurs: "Ahmed EL-BAHRI, Caroline CARTIER, CHU Guyane"
+  source_date: "2026-06-08"
+  status: "MVP datathon — à valider équipe médicale avant production"
+  purpose: >
+    Centraliser toutes les données métier configurables du projet HDJ Agent :
+    ressources, rôles, actes, contraintes et interactions.
+    Éviter tout hardcode métier dans les agents Mesa.
+    Servir de source de vérité partagée entre les membres de l'équipe.
+
+# ============================================================
+# 1. RESSOURCES HDJ
+# Source principale : [EQUIP] equipements_hdj_endocrino.yaml (intégral)
+#                    [RES]   core/resources/ressources_hdj.py
+# ============================================================
+ressources_hdj:
+
+  contexte_metier:
+    # Source : [EQUIP] §source_exact_context
+    intention_originale: >
+      Cette liste n'est pas un simple catalogue médical. Elle doit être utilisée comme une
+      matrice d'équipement du jumeau numérique et comme référentiel de contraintes pour
+      l'Agent Ressource / Salle.
+    role_multi_agents: >
+      Les développeurs doivent intégrer ces équipements comme des variables limitantes
+      dans le code Python.
+    exigence_jury: >
+      Pour que la simulation HDJ soit crédible et validable par le jury du DU, l'Agent
+      Coordinateur doit allouer les patients aux salles non seulement en fonction du temps
+      disponible, mais aussi en fonction de la disponibilité du matériel spécifique requis.
+    objets_metier_lies:
+      - "Actes CCAM"
+      - "Forfaits HDJ"
+      - "Bilans"
+      - "Tests dynamiques"
+      - "ETP"
+      - "Parcours identifiés par l'équipe médicale"
+    destinataires:
+      - pole: "Pôle Médical"
+        contact: "Caroline"
+        role: "Validation métier de la liste des équipements et des parcours associés"
+      - pole: "Pôle Technique"
+        role: "Intégration des variables de blocage dans Python"
+
+  principe_modelisation:
+    # Source : [EQUIP] §modeling_principle
+    description: >
+      Dans la simulation, un patient ne doit pas être affecté uniquement selon un créneau
+      horaire disponible. L'Agent Coordinateur doit aussi vérifier que les équipements
+      requis par le parcours ou l'acte sont disponibles dans la salle ou l'unité HDJ.
+    contrainte_fondamentale: >
+      Les équipements doivent être modélisés comme des ressources limitantes pouvant créer
+      de l'attente, de la saturation ou une replanification.
+    role_agent_ressource_salle: >
+      L'Agent Ressource / Salle porte les contraintes de disponibilité des salles,
+      équipements, matériels critiques et capacités associées aux parcours HDJ.
+    role_agent_coordinateur: >
+      L'Agent Coordinateur alloue les patients aux créneaux et aux salles en vérifiant
+      simultanément le temps disponible, les ressources disponibles, les actes à réaliser
+      et les priorités.
+    recommandation_mvp: >
+      Pour le MVP du datathon, ne pas modéliser tous les équipements. Se concentrer sur
+      deux goulots d'étranglement démonstratifs : 1 rétinographe et 2 fauteuils médicalisés.
+
+  mvp_ressources_goulot:
+    # Source : [EQUIP] §mvp_bottleneck_resources + [RES] core/resources/ressources_hdj.py
+    # Ces deux ressources sont déjà implémentées dans create_mvp_resources()
+
+    retinographe:
+      id: retinographe_001
+      nom: "Rétinographe non mydriatique"
+      quantite: 1                    # [EQUIP] quantity + [RES] total_units=1
+      categorie: plateau_technique   # [EQUIP] category
+      criticite: haute               # [EQUIP] criticality: high
+      capex_eur:
+        min: 15000                   # [EQUIP] capex_estimate_eur.min
+        max: 20000                   # [EQUIP] capex_estimate_eur.max
+      utilise_pour:                  # [EQUIP] used_for
+        - "Bilan annuel des complications du diabète"
+        - "Dépistage de la rétinopathie diabétique"
+        - "Bilan ophtalmologique"
+      actes_et_pathways:             # [EQUIP] acts_or_pathways
+        - bilan_complications_diabete
+        - depistage_retinopathie
+        - bilan_ophtalmologique
+      actes_ccam:                    # [ELIG] ACTES_RETINOGRAPHE
+        - BGQP007
+        - BZQK001
+        - BLQP010
+        - BDQP003
+      role_modelisation: >           # [EQUIP] modeling_role
+        Ressource rare. Si un agent patient a besoin d'un bilan ophtalmologique ou d'un
+        dépistage de rétinopathie, il doit attendre que le rétinographe soit libéré.
+      comportement_demo_attendu: >   # [EQUIP] expected_demo_behavior
+        Démontrer l'intelligence de l'Agent Coordinateur : un patient nécessitant le bilan
+        ophtalmo attend ou est replanifié si le rétinographe est occupé.
+      implementation_python: "core/resources/ressources_hdj.py :: create_mvp_resources()['retinographe']"
+
+    fauteuil_medicalise:
+      id: fauteuil_medicalise
+      nom: "Fauteuil médicalisé de repos / lit porte"
+      quantite: 2                      # [EQUIP] quantity + [RES] total_units=2
+      categorie: securite_prelevements # [EQUIP] category
+      criticite: haute                 # [EQUIP] criticality: high
+      utilise_pour:                    # [EQUIP] used_for
+        - "Tests dynamiques endocriniens"
+        - "Tests de longue durée"
+        - "Tests à risque d'hypoglycémie"
+        - "Tests à risque de restriction hydrique"
+      actes_et_pathways:               # [EQUIP] acts_or_pathways
+        - test_synacthene
+        - test_insuline
+        - test_glucagon
+        - restriction_hydrique
+        - cycle_cortisol
+      actes_ccam:                      # [ELIG] ACTES_FAUTEUIL
+        - PZQP018
+      role_modelisation: >             # [EQUIP] modeling_role
+        Ressource de capacité. Les patients nécessitant une surveillance prolongée doivent
+        occuper un fauteuil médicalisé pendant toute la durée du test. Si les 2 fauteuils
+        sont occupés, le patient est mis en attente ou replanifié.
+      implementation_python: "core/resources/ressources_hdj.py :: create_mvp_resources()['fauteuil']"
+
+  catalogue_equipements_complet:
+    # Source : [EQUIP] §equipment_catalog — intégral, sans perte
+
+    tests_dynamiques_endocriniens:
+      titre: "Équipements pour les Tests Dynamiques Endocriniens"
+      sous_titre: "Sécurité & Prélèvements"
+      actes_cibles:                    # [EQUIP] target_acts
+        - "Tests au Synacthène"
+        - "Tests à l'insuline"
+        - "Tests au glucagon"
+        - "Restriction hydrique"
+        - "Cycle du cortisol"
+        - "Acte CCAM PZQP018"
+      equipements:
+        - nom: "Fauteuils médicalisés de repos ou lits portes"
+          type_contrainte: capacity
+          mvp: true
+          quantite_mvp: 2
+          justification: >
+            Indispensables pour les tests de longue durée, par exemple cycle du cortisol,
+            ou les tests à risque comme le test d'hypoglycémie.
+        - nom: "Cathéters à demeure et perfuseurs"
+          type_contrainte: consumable
+          mvp: false
+          acte_associe: PZQP018
+          justification: "Permettent les prélèvements sériés sans repiquage."
+        - nom: "Pompes à perfusion volumétriques / pousse-seringues électriques"
+          type_contrainte: equipment
+          mvp: false
+          justification: "Permettent l'administration millimétrée des hormones."
+        - nom: "Moniteurs multiparamétriques ECG / TA / SpO2"
+          type_contrainte: equipment
+          mvp: false
+          justification: >
+            Obligatoires pour la surveillance rapprochée lors des tests de restriction
+            hydrique ou d'hypoglycémie induite.
+        - nom: "Chariot d'urgence complet avec défibrillateur"
+          type_contrainte: safety_required
+          mvp: false
+          justification: >
+            Obligation médico-légale absolue en HDJ, particulièrement lors des tests
+            de provocation.
+        - nom: "Réfrigérateurs pharmaceutiques sécurisés connectés"
+          type_contrainte: storage
+          mvp: false
+          justification: >
+            Conservation stricte des peptides, hormones de stimulation et insulines.
+
+    bilan_annuel_complications:
+      titre: "Équipements pour le Bilan Annuel des Complications"
+      sous_titre: "Plateau Technique"
+      actes_cibles:                    # [EQUIP] target_acts
+        - "Dépistage des microangiopathies"
+        - "Dépistage des macroangiopathies"
+        - "Acte CCAM BLQP010"
+      equipements:
+        - nom: "Rétinographe non mydriatique"
+          type_contrainte: capacity
+          mvp: true
+          quantite_mvp: 1
+          justification: >
+            Équipement capital et onéreux pour le dépistage de la rétinopathie diabétique
+            sur place, sans nécessiter un ophtalmologiste à temps plein.
+        - nom: "Électrocardiographe ECG 12 pistes"
+          type_contrainte: equipment
+          mvp: false
+          justification: "Évaluation cardiovasculaire de base."
+        - nom: "Appareils de mesure de l'Indice de Pression Systolique IPS automatisés"
+          type_contrainte: equipment
+          mvp: false
+          exemples:
+            - "Doppler de poche"
+            - "Systèmes de brassards simultanés"
+          justification: "Mesure de l'Indice de Pression Systolique."
+        - nom: "Laser Doppler ou oxymètre de pouls tissulaire TcPO2"
+          type_contrainte: equipment
+          mvp: false
+          acte_associe: BLQP010
+          justification: "Mesure de la pression de perfusion cutanée."
+        - nom: "Monofilaments de Semmes-Weinstein et diapasons 128 Hz"
+          type_contrainte: small_equipment
+          mvp: false
+          justification: "Évaluation de la neuropathie périphérique."
+
+    technologies_diabete:
+      titre: "Équipements pour l'Initiation aux Technologies du Diabète"
+      actes_cibles:                    # [EQUIP] target_acts
+        - "Mise sous pompe"
+        - "YNYN001"
+        - "Holter glycémique"
+        - "EQQF002"
+      equipements:
+        - nom: "Postes informatiques avec logiciels d'extraction de données"
+          type_contrainte: equipment
+          mvp: false
+          exemples_logiciels:
+            - CareLink
+            - Glooko
+            - Diasend
+            - LibreView
+          justification: >
+            L'HDJ est un carrefour data pour l'extraction et l'analyse des données
+            de pompe ou de capteurs.
+        - nom: "Stock tampon de consommables technologiques"
+          type_contrainte: stock
+          mvp: false
+          exemples:
+            - "Pompes à insuline externes"
+            - "Capteurs de mesure continue du glucose MCG"
+            - "Cathéters"
+            - "Transmetteurs"
+          justification: "Disponibilité du matériel pour l'initiation et la démonstration."
+        - nom: "Kits de démonstration tactiles"
+          type_contrainte: education_material
+          mvp: false
+          exemples:
+            - "Fausses peaux"
+            - "Pompes d'apprentissage"
+          justification: "Éducation pratique des patients."
+
+    etp_pied_diabetique:
+      titre: "Équipements pour l'Éducation Thérapeutique et le Pied Diabétique"
+      actes_cibles:                    # [EQUIP] target_acts
+        - "Insulinothérapie fonctionnelle"
+        - "ETP"
+        - "Prise en charge du mal perforant plantaire"
+        - "Pied diabétique"
+      equipements:
+        - nom: "Balances à impédancemétrie médicale"
+          type_contrainte: equipment
+          mvp: false
+          justification: >
+            Évaluation précise de la composition corporelle : masse grasse, masse maigre
+            et masse hydrique.
+        - nom: "Matériel pédagogique nutritionnel"
+          type_contrainte: education_material
+          mvp: false
+          exemples:
+            - "Modèles d'aliments factices"
+          justification: "Apprentissage du calcul des glucides en ETP."
+        - nom: "Chariots de soins pour plaies complexes"
+          type_contrainte: equipment
+          mvp: false
+          exemples:
+            - "Sets de détersion mécanique"
+            - "Curettes"
+            - "Bistouris"
+            - "Matériel de décharge"
+            - "Bottes amovibles"
+          justification: "Prise en charge du pied diabétique et des plaies complexes."
+
+  regles_simulation:
+    # Source : [EQUIP] §simulation_rules — intégral
+    - id: R001
+      nom: "Allocation selon équipement requis"
+      description: >
+        Un patient ne peut être affecté à un créneau HDJ que si tous les équipements
+        critiques requis par son parcours sont disponibles.
+      concerne:
+        - "Agent Coordinateur"
+        - "Agent Ressource / Salle"
+      implementation_python: "core/simulation/scheduler.py :: Scheduler._resources_ok()"
+
+    - id: R002
+      nom: "File d'attente rétinographe"
+      description: >
+        Si un patient nécessite un bilan ophtalmologique ou un dépistage de rétinopathie
+        et que le rétinographe est occupé, il est mis en attente ou replanifié.
+      ressource_requise: retinographe_001
+
+    - id: R003
+      nom: "Occupation fauteuil médicalisé"
+      description: >
+        Les tests dynamiques longs ou à risque occupent un fauteuil médicalisé pendant
+        toute la durée simulée du test. Si les deux fauteuils sont occupés, le patient
+        attend ou est replanifié.
+      ressource_requise: fauteuil_medicalise
+
+    - id: R004
+      nom: "Sécurité tests dynamiques"
+      description: >
+        Les tests dynamiques à risque nécessitent au minimum une ressource de surveillance.
+        Pour le MVP, cette contrainte peut être représentée implicitement par l'occupation
+        d'un fauteuil médicalisé.
+      ressource_requise: fauteuil_medicalise
+
+  recommandations_metier:
+    # Source : [EQUIP] §business_recommendations
+    pour_developpeurs_datathon: >
+      En 30 heures, ne pas coder tous les équipements. Coder uniquement deux équipements
+      goulots d'étranglement pour le MVP : un rétinographe et deux fauteuils médicalisés.
+    instruction_etudiant_it: >
+      L'étudiant IT doit prioriser les deux variables limitantes démonstratives :
+      disponibilité du rétinographe et disponibilité des fauteuils médicalisés.
+    pour_direction_capex_opex: >
+      L'équipement d'un HDJ métabolique est relativement léger en CAPEX/OPEX par rapport
+      à un bloc opératoire. L'investissement le plus lourd est le rétinographe, estimé entre
+      15 000 et 20 000 euros. Le modèle économique de l'HDJ absorbe rapidement cet
+      amortissement grâce aux forfaits GHS.
+    argument_mutualisation: >
+      La mutualisation des équipements, par exemple un ECG partagé avec la médecine interne,
+      est un argument d'efficience organisationnelle majeur à avancer au jury.
+
+  abstraction_python_suggeree:
+    # Source : [EQUIP] §suggested_python_abstraction
+    champs_ressource:
+      - resource_id
+      - name
+      - quantity
+      - category
+      - available_units
+      - required_by_pathways
+      - duration_minutes
+      - is_bottleneck
+    champs_patient:
+      - patient_id
+      - pathway_type
+      - required_resources
+      - estimated_duration_minutes
+      - priority
+      - scheduled_start
+      - waiting_time
+    logique_scheduler:
+      - "Vérifier les ressources requises pour chaque patient."
+      - "Vérifier la disponibilité des ressources au créneau proposé."
+      - "Affecter le patient si toutes les contraintes sont satisfaites."
+      - "Sinon : mettre en file d'attente ou replanifier."
+      - "Calculer temps d'attente, taux d'occupation ressource, saturation."
+
+  pitch_messages:
+    # Source : [EQUIP] §pitch_message
+    technique: >
+      Pour le datathon, le modèle ne doit pas coder tous les équipements. Le MVP doit
+      démontrer l'intelligence de l'agent coordinateur avec deux contraintes concrètes :
+      un rétinographe unique et deux fauteuils médicalisés.
+    strategique: >
+      L'équipement d'un HDJ métabolique est relativement léger en CAPEX/OPEX par rapport
+      à un bloc opératoire. Le rétinographe est l'investissement principal, estimé autour
+      de 15 000 à 20 000 euros. La mutualisation avec d'autres services peut renforcer
+      l'efficience.
+
+# ============================================================
+# 2. RÔLES SOIGNANTS
+# Source : [DOCX] contraintes_agents_interactions.docx
+#          [SOIGN] core/agents/soignant.py PARAMS_PAR_ROLE
+#          [MODEL] core/hopital/hopital_model.py CONFIGS_SOIGNANTS (horaires)
+# Durées actes : a_parametrer sauf délai dilatation ophtalmo (30 min — [DOCX])
+# ============================================================
+roles_soignants:
+
+  IDE:
+    role_legacy: Paramed            # [MODEL] rétrocompat demo_parcours.py (s.role)
+    horaires_typiques: "7h-19h"     # [MODEL] CONFIGS_SOIGNANTS IDE Bilan / IDE Chimio
+    vacation_only: false            # [SOIGN] PARAMS_PAR_ROLE
+    delai_dilatation_min: 0
+    taches:                         # [DOCX] §IDE + [SOIGN]
+      - prelevement
+      - etp
+      - soins
+      - constantes
+      - preparation_patient
+      - coordination
+    duree_acte_min: a_parametrer    # non documentée précisément
+    contraintes:
+      # Source : [DOCX] §"Agent soignant – infirmière (IDE)"
+      - "Ressource partagée multi-actes : prélèvements, éducation, soins ulcère, coordination"
+      - "Prise en charge nouveau patient : augmentation du temps de consultation"
+      - "Certains actes exigent IDE + salle + matériel simultanément (join)"
+      - "Temps de handoff, appels, traçabilité non négligeables"
+      - "Ajustement timing repas / glycémie / insuline avec environnement hospitalier"
+      - "Rôle entonnoir : compile données ETP et constantes avant consultation endocrinologue"
+    precedences:
+      doit_preceder: [endocrinologue]  # [DOCX] "Mettre le rdv endocrino après l'activité IDE"
+    dependances_amont: []
+    pools_possibles:                 # [DOCX] "modéliser pools ou polyvalence"
+      - IDE_prelevements
+      - IDE_education
+      - IDE_soins
+
+  endocrinologue:
+    role_legacy: Med                # [MODEL] rétrocompat demo_parcours.py
+    horaires_typiques: "8h-17h"     # [MODEL] CONFIGS_SOIGNANTS Dr. Dupont / Dr. Martin
+    vacation_only: false
+    delai_dilatation_min: 0
+    taches:                         # [DOCX] §endocrinologue + [SOIGN]
+      - consultation
+      - prescription
+      - synthese_medicale
+      - validation_sortie
+      - demande_examens_complementaires
+    duree_acte_min: a_parametrer    # [DOCX] "durée variable selon complexité (nouveau patient,
+                                    # insulinothérapie/pompe, complications) → distribution lognormale/gamma"
+    contraintes:
+      # Source : [DOCX] §"Agent soignant – médecin endocrinologue"
+      - "Consultation souvent conditionnée par disponibilité résultats labo/imagerie et évaluation IDE"
+      - "Dépendance ophtalmo : fond d'œil nécessaire pour adapter insuline"
+      - "Temps de décision et boucles rework si résultats anormaux (ECG, bilan complémentaire)"
+      - "Possibilité urgence intercurrente modifiant planning"
+      - "Doit faire synthèse pour libérer patient avec CR et ordonnance avant flux de sortie"
+    dependances_amont: [IDE, labo, ophtalmologue]
+
+  ophtalmologue:
+    role_legacy: Med                # [MODEL] rétrocompat demo_parcours.py
+    horaires_typiques: a_parametrer # [DOCX] "vacations / 1-2 demi-journées"
+    vacation_only: true             # [DOCX] "ressource rare et souvent batchée"
+    delai_dilatation_min: 30        # [DOCX] "dilatation pupillaire avant consultation :
+                                    # attente incompressible de 30 min"
+    delai_dilatation_steps: 3       # 1 step Mesa = 10 min → 30 min = 3 steps [MODEL]
+    ressource_requise: retinographe # [EQUIP] + [ELIG]
+    taches:                         # [DOCX] §ophtalmologue + [SOIGN]
+      - retinographie
+      - interpretation_fond_oeil
+    duree_acte_min: a_parametrer
+    contraintes:
+      # Source : [DOCX] §"Agent soignant – médecin ophtalmologue"
+      - "Vacations limitées : 1-2 demi-journées — impose files en amont"
+      - "Si imagerie rétinienne non gradable/technique indisponible : reprogrammation (rework)"
+      - "Couplage imagerie : ophtalmo aval du rétinographe si interne, délai si externe"
+      - "Dilatation pupillaire : 30 min incompressibles avant consultation"
+      - "Accompagnement tierce personne requis après dilatation (famille, ami)"
+      - "Interprétation ophtalmo avant consultation endocrinologue"
+      - "Flux brancardage si plateau ophtalmo sur autre site : accompagnement obligatoire"
+    dependances_amont: []
+
+  dieteticienne:
+    role_legacy: Paramed            # [MODEL] rétrocompat demo_parcours.py
+    horaires_typiques: a_parametrer
+    vacation_only: false
+    delai_dilatation_min: 0
+    taches:                         # [DOCX] §dieteticienne + [SOIGN]
+      - bilan_nutritionnel
+      - etp_nutrition
+      - calcul_glucides
+    duree_acte_min: a_parametrer    # [DOCX] "durée dépendante du profil : DT2 obésité/NAFLD
+                                    # vs DT1 carb counting"
+    contraintes:
+      # Source : [DOCX] §"Agent activité annexe – diététicienne"
+      - "Capacité limitée, durée dépendante du profil patient"
+      - "Précédence configurable : utile avant endocrinologue (plan thérapeutique) ou après (renforcement)"
+      - "Taux de no-show souvent plus élevé que autres actes d'éducation"
+      - "Prévoir diététique après examens et soins infirmiers, avant consultation endocrinologue"
+    precedences:
+      configurable: true            # [DOCX] "tester deux politiques de séquencement"
+    dependances_amont: []
+
+# ============================================================
+# 3. ACTES ET TÂCHES
+# Source : [ELIG] core/rules/hdj_eligibility.py
+#          [EQUIP] equipements_hdj_endocrino.yaml
+#          [DOCX] contraintes_agents_interactions.docx
+# ============================================================
+actes_et_taches:
+
+  actes_ccam_hdj_endocrino:
+    # Source : [ELIG] ACTES_RETINOGRAPHE + ACTES_FAUTEUIL + [EQUIP]
+
+    retinographie:
+      codes: [BGQP007, BZQK001, BLQP010, BDQP003]  # [ELIG] ACTES_RETINOGRAPHE
+      ressource: retinographe
+      duree_min: 90               # [ELIG] DUREES_MIN["retinographe"] — flag: à valider
+      pathway: depistage_retinopathie
+      reference_yaml: "[EQUIP] §bilan_annuel_complications : acte BLQP010 cité explicitement"
+      reference_mco: "[MCO26] §1.5 : soins sans nuitée → Instruction DGOS/R1/DSS/1A/2020/52"
+
+    test_dynamique_endocrinien:
+      codes: [PZQP018]            # [ELIG] ACTES_FAUTEUIL
+      ressource: fauteuil_medicalise
+      duree_min: 180              # [ELIG] DUREES_MIN["fauteuil_dynamique"] — flag: à valider
+      pathway: test_dynamique_endocrinien
+      tests_couverts:             # [EQUIP] acts_or_pathways
+        - test_synacthene
+        - test_insuline
+        - test_glucagon
+        - restriction_hydrique
+        - cycle_cortisol
+      reference_yaml: "[EQUIP] §tests_dynamiques_endocriniens : acte PZQP018 cité explicitement"
+
+    bilan_annuel_diabete:
+      codes: [BLQP010]            # [ELIG] ACTES_RETINOGRAPHE (inclut BLQP010)
+      duree_min: 60               # [ELIG] DUREES_MIN["bilan_diabete"] — flag: à valider
+      pathway: bilan_annuel_diabete
+
+    consultation_simple:
+      duree_min: 30               # [ELIG] DUREES_MIN["consultation_simple"] — flag: à valider
+      pathway: a_parametrer
+
+  actes_hors_scope_hdj:
+    # [ELIG] ACTES_HORS_SCOPE — actes présents dans données CHU Guyane, hors endocrino HDJ
+    codes: [YYYY088, ZCQJ003, ZCQM003, JQQP001, JQGD012, YYYY600, EAQH002, NFQK001, NDQK001]
+
+  actes_hors_donnees:
+    # [ELIG] commentaire explicite : CCAM présents dans liste projet mais absents des données
+    - acte: "Initiation pompe à insuline"
+      codes_attendus: [YNYN001]
+      statut: "CCAM absent des données source → non codé dans hdj_eligibility.py"
+    - acte: "Holter glycémique"
+      codes_attendus: [EQQF002]
+      statut: "CCAM absent des données source → non codé"
+    - acte: "Pied diabétique / mal perforant plantaire"
+      codes_attendus: a_parametrer
+      statut: "CCAM absent des données source → non codé"
+
+  taches_soignants_documentes:
+    # Source : [DOCX] contraintes_agents_interactions.docx
+    prelevement:
+      role: IDE
+      prerequis_patient: a_jeun_si_bilan_biologique  # [DOCX] §agent patient
+    constantes:
+      role: IDE
+      doit_preceder: consultation_endocrinologue      # [DOCX] "rôle entonnoir"
+    preparation_patient:
+      role: IDE
+    consultation_endocrinologue:
+      role: endocrinologue
+      prerequis: [constantes, resultats_labo, resultats_imagerie]
+    synthese_medicale:
+      role: endocrinologue
+      doit_preceder: sortie_patient
+    validation_sortie:
+      roles: [endocrinologue, administratif]
+    retinographie:
+      role: ophtalmologue
+      ressource: retinographe
+      prerequis: retinographe_disponible
+    interpretation_fond_oeil:
+      role: ophtalmologue
+      doit_preceder: consultation_endocrinologue      # [DOCX] "interprétation avant endo"
+    bilan_nutritionnel:
+      role: dieteticienne
+    etp_nutrition:
+      role: dieteticienne
+
+# ============================================================
+# 4. CONTRAINTES INTERACTIONS INTER-AGENTS
+# Source : [DOCX] contraintes_agents_interactions.docx — matrice complète
+# ============================================================
+contraintes_interactions:
+
+  patient_administratif:
+    # [DOCX] §1 "Contraintes Patient ↔ Agent administratif"
+    - interaction: "Arrivée du patient"
+      contrainte: "Le patient ne peut accéder au parcours de soins qu'après enregistrement administratif."
+    - interaction: "Retard patient"
+      contrainte: "Perturbation du planning administratif et médical."
+    - interaction: "Dossier incomplet"
+      contrainte: "Retour du patient vers l'accueil (boucle de rework)."
+    - interaction: "Difficultés de communication"
+      contrainte: "Allongement du temps d'enregistrement et risque d'erreur administrative (grand âge, langues régionales)."
+    - interaction: "Priorisation"
+      contrainte: "L'administratif modifie l'ordre de passage selon règles cliniques : patient à jeun, urgence pied diabétique."
+    - interaction: "Facturation/codage"
+      contrainte: "Certaines activités ne peuvent être clôturées qu'après validation administrative."
+    - interaction: "Contrainte amont/aval"
+      contrainte: "Validation droits prise en charge avant facturation ; récupération CR endocrinologue et programmation RDV à la sortie."
+
+  patient_ide:
+    # [DOCX] §2 "Contraintes Patient ↔ IDE"
+    - interaction: "Prélèvement biologique"
+      contrainte: "Le patient doit être disponible et parfois à jeun."
+    - interaction: "Education thérapeutique"
+      contrainte: "Durée variable selon niveau d'autonomie et complexité du patient."
+    - interaction: "Soins de plaies / pied diabétique"
+      contrainte: "Nécessitent simultanément patient + IDE + salle + matériel."
+    - interaction: "Tolérance à l'attente"
+      contrainte: "Si attente IDE dépasse seuil individuel : risque d'abandon du parcours."
+    - interaction: "Mobilité"
+      contrainte: "Déplacement du patient entre zones de soins — temps non productif."
+    - interaction: "Nouveaux patients"
+      contrainte: "Temps IDE plus long pour évaluation initiale et éducation."
+
+  patient_endocrinologue:
+    # [DOCX] §3 "Contraintes Patient ↔ Endocrinologue"
+    - interaction: "Consultation médicale"
+      contrainte: "Conditionnée par la disponibilité du médecin."
+    - interaction: "Résultats requis"
+      contrainte: "Certains examens doivent être réalisés avant la consultation."
+    - interaction: "Décisions médicales"
+      contrainte: "Peuvent déclencher nouveaux actes : bilan complémentaire, ECG, consultation diététique, ophtalmologie."
+    - interaction: "Heure limite de départ"
+      contrainte: "Consultation potentiellement annulée ou écourtée si patient doit partir (transport, travail)."
+    - interaction: "Complexité clinique"
+      contrainte: "Influence directement la durée de consultation."
+
+  patient_ophtalmologue:
+    # [DOCX] §4 "Contraintes Patient ↔ Ophtalmologue"
+    - interaction: "Rétinographie préalable"
+      contrainte: "Examen ophtalmologique dépendant de l'imagerie."
+    - interaction: "Qualité de l'imagerie"
+      contrainte: "Image non exploitable → reprogrammation ou examen spécialisé."
+    - interaction: "Vacations limitées"
+      contrainte: "Attente potentiellement importante avant consultation."
+    - interaction: "Service externe"
+      contrainte: "Si ophtalmologie hors HDJ : délai supplémentaire dans le parcours."
+
+  patient_dieteticienne:
+    # [DOCX] §5 "Contraintes Patient ↔ Diététicienne"
+    - interaction: "Séquencement du parcours"
+      contrainte: "Consultation souvent après IDE et examens, avant endocrinologue."
+    - interaction: "Adhésion du patient"
+      contrainte: "Risque de refus ou d'absence à l'entretien."
+    - interaction: "Complexité nutritionnelle"
+      contrainte: "Influence la durée de prise en charge."
+    - interaction: "Plan thérapeutique"
+      contrainte: "Recommandations diététiques peuvent être nécessaires avant décision médicale finale."
+
+  administratif_ide:
+    # [DOCX] §6 "Contraintes Agent administratif ↔ IDE"
+    - interaction: "Transmission du dossier"
+      contrainte: "L'IDE ne peut débuter sans dossier complet."
+    - interaction: "Étiquettes biologiques"
+      contrainte: "Les prélèvements dépendent de leur disponibilité."
+    - interaction: "Reprogrammation"
+      contrainte: "Nécessite coordination entre accueil et IDE."
+    - interaction: "Informations manquantes"
+      contrainte: "Génèrent des interruptions de flux."
+
+  administratif_endocrinologue:
+    # [DOCX] §7 "Contraintes Agent administratif ↔ Médecin endocrinologue"
+    - interaction: "Planning des consultations"
+      contrainte: "Dépend de la gestion des rendez-vous."
+    - interaction: "Retards cumulés"
+      contrainte: "Les retards administratifs se propagent aux consultations."
+    - interaction: "Codage PMSI/facturation"
+      contrainte: "Certaines données médicales doivent être transmises à l'administration."
+    - interaction: "Gestion des urgences"
+      contrainte: "Modification dynamique du planning médical."
+
+  ide_endocrinologue:
+    # [DOCX] §8 "Contraintes IDE ↔ Endocrinologue" — "la relation la plus critique dans un HDJ"
+    criticite: "RELATION LA PLUS CRITIQUE DANS UN HDJ — source : [DOCX]"
+    contraintes:
+      - interaction: "Évaluation IDE préalable"
+        contrainte: "Condition d'accès à la consultation médicale."
+      - interaction: "Résultats biologiques"
+        contrainte: "Doivent être transmis au médecin avant la consultation."
+      - interaction: "Education thérapeutique"
+        contrainte: "Peut être demandée avant ou après l'avis médical."
+      - interaction: "Coordination clinique"
+        contrainte: "Temps de transmission (handoff) souvent sous-estimé."
+      - interaction: "Décisions médicales"
+        contrainte: "Génèrent des tâches IDE supplémentaires : insuline, pompe, pansement, éducation."
+      - interaction: "Validation des actes"
+        contrainte: "Certains actes IDE nécessitent une prescription médicale préalable."
+
+  ide_ophtalmologue:
+    # [DOCX] §9 "Contraintes IDE ↔ Ophtalmologue"
+    - interaction: "Préparation du patient"
+      contrainte: "Réalisation éventuelle des examens préalables."
+    - interaction: "Transmission des résultats"
+      contrainte: "Nécessaire avant interprétation ophtalmologique."
+    - interaction: "Reprise du patient"
+      contrainte: "Organisation des examens complémentaires si anomalie détectée."
+
+  ide_dieteticienne:
+    # [DOCX] §10 "Contraintes IDE ↔ Diététicienne"
+    - interaction: "Education coordonnée"
+      contrainte: "Partage d'informations sur habitudes alimentaires et autosurveillance."
+    - interaction: "Parcours séquentiel"
+      contrainte: "L'ordre des interventions influence la durée globale du séjour."
+    - interaction: "Redondance d'information"
+      contrainte: "Risque de répétition augmentant la durée totale du parcours."
+
+  endocrinologue_dieteticienne:
+    # [DOCX] §11 "Contraintes Endocrinologue ↔ Diététicienne"
+    - interaction: "Élaboration du plan thérapeutique"
+      contrainte: "Nécessite parfois l'avis diététique préalable."
+    - interaction: "Réorientation"
+      contrainte: "Le médecin peut demander une consultation supplémentaire."
+    - interaction: "Coordination"
+      contrainte: "Échanges d'informations influençant la durée effective des consultations."
+
+  endocrinologue_ophtalmologue:
+    # [DOCX] §12 "Contraintes Endocrinologue ↔ Ophtalmologue"
+    - interaction: "Dépistage des complications"
+      contrainte: "Les résultats ophtalmologiques influencent les décisions thérapeutiques."
+    - interaction: "Partage de résultats"
+      contrainte: "Besoin de disponibilité des comptes rendus."
+    - interaction: "Reprogrammation"
+      contrainte: "En cas d'examen ophtalmologique non réalisable."
+
+  soignants_environnement:
+    # [DOCX] §13 "Contraintes Agents soignants ↔ Environnement hospitalier"
+    - interaction: "Occupation des salles"
+      contrainte: "Consultation impossible sans salle disponible."
+    - interaction: "Plateau technique"
+      contrainte: "Ressource partagée créant des files d'attente."
+    - interaction: "Temps de nettoyage"
+      contrainte: "Réduit la capacité effective."
+    - interaction: "Pannes matérielles"
+      contrainte: "Diminution temporaire de capacité."
+    - interaction: "Horaires d'ouverture"
+      contrainte: "Contraignent les possibilités de séquencement des actes."
+
+# ============================================================
+# 5. CONTRAINTES SYSTÈME GLOBALES
+# Source : [DOCX] §14 "Contraintes systémiques globales"
+#          [SCHED] core/simulation/scheduler.py (paramètres documentés comme hypothèses)
+#          [MODEL] core/hopital/hopital_model.py
+# ============================================================
+contraintes_systeme:
+
+  synchronisation_multi_ressources:
+    # [DOCX] §14
+    description: "Patient + professionnel + salle + matériel doivent être disponibles simultanément."
+    modele_cible: "join multi-ressource — hors scope MVP actuel"
+
+  propagation_retards:
+    # [DOCX] §14
+    description: "Retard administratif → retard IDE → retard médecin → allongement du séjour."
+    modele_cible: "EnvironnementHospitalier (à créer : core/agents/environnement.py)"
+
+  deplacement_goulot:
+    # [DOCX] §14 + §"effets contre-intuitifs"
+    description: >
+      Améliorer une étape peut saturer une autre ressource.
+      Accélérer l'accueil ou le labo peut déplacer le goulot vers endocrinologue/ophtalmologue.
+    modele_cible: "observable via KPIs de simulation"
+
+  rework_loops:
+    # [DOCX] §14
+    types:
+      - "Dossier administratif incomplet → retour accueil"
+      - "Résultat biologique non exploitable (hémolyse) → reprélèvement"
+      - "Imagerie non interprétable → reprogrammation"
+      - "Examen complémentaire prescrit par médecin → extension séjour"
+    modele_cible: "boucles probabilistes dans PatientAgent (à implémenter)"
+
+  handoff_temps_invisibles:
+    # [DOCX] §"données opérationnelles manquantes / difficilement observables"
+    description: >
+      Coordination, appels, recherche d'information, traçabilité.
+      Si non modélisé, surestime la capacité.
+    recommendation: "Modéliser comme temps fixe par patient ou overhead par vacation."
+
+  circuit_court_labo:
+    # [DOCX] texte explicite "labo doit traiter les bilans du matin en urgence"
+    description: "Résultats biologiques du matin disponibles en début d'après-midi au plus tard."
+    deadline: "mi-journée"
+    impact: "Contrainte de deadline pour consultation endocrinologue."
+
+  deadline_cr_plateau_technique:
+    # [DOCX] "Plateau tec et ophtalmo doivent rendre leur CR à la mi-journée maximum"
+    description: "Plateau technique et ophtalmologue : CR disponibles avant mi-journée."
+    deadline: "mi-journée"
+
+  contrainte_a_jeun:
+    # [DOCX] §agent patient "Contraintes biologiques : arrive à jeun pour bilan"
+    description: "Certains patients arrivent à jeun — fenêtre stricte repas."
+    impact: "Priorité prélèvement en début de matinée."
+
+  indisponibilite_ressource:
+    # [DOCX] §agent environnement
+    description: "Panne matérielle ou soignant absent → replanification."
+    modele_cible: "EnvironnementHospitalier.evenements"
+
+  turnover_salle:
+    # [DOCX] §agent environnement "contraintes de setup/turnover"
+    description: "Nettoyage / installation entre patients — temps incompressible."
+    duree_min: a_parametrer
+    note: "Important pour petite chirurgie et soins complexes (pied diabétique)."
+
+  contrainte_hoteliere:
+    # [DOCX] "contrainte hôtelière stricte calé sur impératifs thérapeutiques"
+    description: "Anticipation des repas pour les patients HDJ selon impératifs thérapeutiques."
+
+  bionettoyage:
+    # [DOCX] "contraintes de bionettoyage box ou lits en cas de programmation en demi-journées"
+    description: "Bionettoyage des box ou lits si programmation en demi-journées."
+    duree_min: a_parametrer
+
+  horaires_simulation:
+    # [SCHED] core/simulation/scheduler.py — paramètres documentés comme hypothèses à valider
+    ouverture: "08h00"              # SLOTS_PER_DAY = 18 slots à partir de 8h
+    fermeture: "17h00"             # 8h + 9h = 17h
+    granularite_creneau_min: 30    # SLOT_DURATION_MIN = 30
+    slots_par_jour: 18             # SLOTS_PER_DAY = 18
+    horizon_defaut_jours: 5        # DEFAULT_N_DAYS = 5
+    capacite_max_parallele: 6      # DEFAULT_MAX_PARALLEL = 6 — hypothèse datathon
+    step_mesa_min: 10              # [MODEL] 1 step Mesa = 10 min (heure_actuelle += 10/60)
+    heure_debut_mesa: 8.0          # [MODEL] HopitalModel.heure_actuelle init
+
+  tolerance_abandon_patient:
+    # [DOCX] §agent patient "contraintes de tolérance/abandon"
+    description: >
+      Probabilité de leave-without-service si attente > seuil individuel.
+      Impact direct sur throughput et qualité perçue.
+    seuil_attente_min: a_parametrer
+    modele_cible: "PatientAgent.tolerance_attente (à implémenter dans patient.py)"
+
+  fenetres_disponibilite_patient:
+    # [DOCX] §agent patient
+    description: "Arrivée RDV ± retard, nécessité de repartir avant heure limite."
+    impact: "Censure de parcours et reprogrammations."
+
+# ============================================================
+# 6. CANDIDATE PATHWAYS
+# Source : [ELIG] core/rules/hdj_eligibility.py — CandidatePathway Literal + règles R04-R11
+# Uniquement les pathways déjà codés — aucun ajout.
+# ============================================================
+candidate_pathways:
+
+  already_hdj:
+    description: "Unité déjà structurée HDJ dans les données"
+    unite_source: "HDJ CONSULTATION"  # [ELIG] UNITES_HDJ_EXPLICITES
+    hdj_potential: already_hdj
+    pmsi_status: official_hdj
+    reorg_potential: high
+    pmsi_validation_required: false
+    duree_min: a_parametrer
+    ressources_requises: []
+    source_code: "[ELIG] R07 — [DATA]+[MCO26]§1.1 : unité HDJ explicite"
+
+  depistage_retinopathie:
+    description: "Dépistage rétinopathie diabétique — actes CCAM rétinographe"
+    actes_ccam: [BGQP007, BZQK001, BLQP010, BDQP003]  # [ELIG] ACTES_RETINOGRAPHE
+    hdj_potential: convertible_to_hdj
+    pmsi_status: pmsi_reference_available
+    reorg_potential: high
+    pmsi_validation_required: true   # Instruction Gradation DGOS/R1/DSS/1A/2020/52 requise
+    duree_min: 90                    # [ELIG] DUREES_MIN["retinographe"] — à valider
+    ressources_requises: [retinographe]
+    source_code: "[ELIG] R04 — [EQUIP]§bilan_annuel_complications"
+    note_pmsi: >
+      Acte CCAM cité explicitement dans [EQUIP]. Critères GHS sans nuitée dans
+      Instruction Gradation → pmsi_validation_required=True.
+
+  test_dynamique_endocrinien:
+    description: "Tests dynamiques endocriniens — acte PZQP018 ou diagnostic E2x"
+    actes_ccam: [PZQP018]            # [ELIG] ACTES_FAUTEUIL
+    diagnostics_associes:            # [ELIG] PREFIXES_TROUBLES_ENDO
+      - E20, E21, E22, E23, E24, E25, E26, E27, E28, E29, E34
+    hdj_potential: convertible_to_hdj
+    pmsi_status: pmsi_reference_available
+    reorg_potential: high
+    pmsi_validation_required: true
+    duree_min: 180                   # [ELIG] DUREES_MIN["fauteuil_dynamique"] — à valider
+    ressources_requises: [fauteuil_medicalise]
+    source_code: "[ELIG] R05 — [EQUIP]§tests_dynamiques_endocriniens"
+
+  etp_diabete_obesite:
+    description: "ETP diabète / obésité — unité diététique ou ETP, ou diagnostic E66"
+    conditions:                      # [ELIG] R11
+      - "DIETETIQUE in LIBELLE_UNITE_MVT"
+      - "ETP in LIBELLE_UNITE_MVT"
+      - "CODE_DIAG startswith E66"
+    hdj_potential: convertible_to_hdj_requires_review
+    pmsi_status: pmsi_pathway_candidate
+    reorg_potential: high
+    pmsi_validation_required: true
+    duree_min: 60                    # [ELIG] DUREES_MIN["bilan_diabete"] — à valider
+    ressources_requises: []
+    source_code: "[ELIG] R11 — [DATA] : unité ETP/diététique"
+    missing_info:
+      - "Protocole HDJ ETP validé équipe médicale"
+      - "Instruction Gradation DGOS/R1/DSS/1A/2020/52 §ETP"
+
+  bilan_annuel_diabete:
+    description: "Bilan annuel complications diabète — E10/E11 + acte dosage (DEQP*)"
+    diagnostics: [E10, E11, E13, E14]  # [ELIG] PREFIXES_DIABETE
+    signal_renforcement: "acte DEQP* présent → reorg_potential=medium (sinon low)"
+    hdj_potential: candidate_hdj_requires_pmsi_validation
+    pmsi_status: pmsi_pathway_candidate
+    reorg_potential: medium          # si acte DEQP* présent — [ELIG] _detect_pathway
+    pmsi_validation_required: true
+    duree_min: 60                    # [ELIG] DUREES_MIN["bilan_diabete"] — à valider
+    ressources_requises: []
+    source_code: "[ELIG] R10a — [MCO26]§1.5"
+
+  bilan_angiopathies:
+    description: "Bilan macroangiopathies / microangiopathies — E10/E11 multi-organes"
+    diagnostics: [E10, E11, E13, E14]  # [ELIG] PREFIXES_DIABETE
+    hdj_potential: candidate_hdj_requires_pmsi_validation
+    pmsi_status: pmsi_pathway_candidate
+    reorg_potential: medium
+    pmsi_validation_required: true
+    duree_min: a_parametrer          # non documentée précisément
+    ressources_requises: []
+    source_code: "[ELIG] CandidatePathway Literal"
+
+  bilan_endocrino_metabolique:
+    description: "Bilan endocrino-métabolique — E2x/E3x/thyroïde/métabolique + consultation"
+    diagnostics:                     # [ELIG] PREFIXES_THYROIDE + PREFIXES_METABOLIQUE
+      - E03, E04, E05, E06, E07     # thyroïde
+      - E16, E46, E61, E64, E74, E75, E83, E87, E88  # métabolique
+    signal_renforcement: "acte DEQP* présent → reorg_potential=medium (sinon low)"
+    hdj_potential: candidate_hdj_requires_pmsi_validation
+    pmsi_status: pmsi_pathway_candidate
+    reorg_potential: medium          # si acte DEQP* présent — [ELIG] _detect_pathway
+    pmsi_validation_required: true
+    duree_min: a_parametrer
+    ressources_requises: []
+    source_code: "[ELIG] R10a / _detect_pathway"
+
+  # Pathways listés dans [DEFI5] mais non codés : CCAM absents des données
+  # → non inclus tant que non sourcés dans les données
+  # - initiation_dispositif (YNYN001) : CCAM absent
+  # - pied_diabetique : CCAM absent
+
+# ============================================================
+# 7. CODES DIAGNOSTICS CIM-10
+# Source : [ELIG] core/rules/hdj_eligibility.py PREFIXES_*
+#          [DEMO] demo_coordinateur.py _DIAG_PRIORITY_PREFIXES
+# ============================================================
+codes_diagnostics:
+  diabete:               [E10, E11, E13, E14]
+  thyroide:              [E03, E04, E05, E06, E07]
+  obesite:               [E66]
+  troubles_endocriniens: [E20, E21, E22, E23, E24, E25, E26, E27, E28, E29, E34]
+  metabolique:           [E16, E46, E61, E64, E74, E75, E83, E87, E88]
+
+  priorite_diagnostic:
+    # [DEMO] demo_coordinateur.py _DIAG_PRIORITY_PREFIXES
+    # Index 0 = plus prioritaire. Règle : garder le diagnostic le plus spécifique par séjour.
+    - rang: 0
+      prefixes: [E20, E21, E22, E23, E24, E25, E26, E27, E28, E29, E34]
+      label: "Troubles endocriniens spécifiques (surrénale, hypophyse, gonades)"
+    - rang: 1
+      prefixes: [E10, E11, E13, E14]
+      label: "Diabète type 1 et type 2"
+    - rang: 2
+      prefixes: [E03, E04, E05, E06, E07]
+      label: "Pathologies thyroïdiennes"
+    - rang: 3
+      prefixes: [E66]
+      label: "Obésité"
+    - rang: 4
+      prefixes: [E16, E46, E61, E64, E74, E75, E83, E87, E88]
+      label: "Troubles métaboliques"
+
+  unites_hdj_explicites:
+    # [ELIG] UNITES_HDJ_EXPLICITES
+    - "HDJ CONSULTATION"
+
+  specialites_hors_endocrino:
+    # [ELIG] SPECIALITES_HORS_ENDOCRINO
+    - "GYNECOLOGIE OBSTETRIQUE"
+    - "GYNECOLOGIE OBSTETRIQUE ET GYNECOLOGIE MEDICALE"
+    - "SAGE-FEMME"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# CONFIGURATION SIMULATION
+# Paramètres de la simulation Mesa (non-métier) : composition de l'équipe,
+# affectations initiales. Source unique : remplace CONFIGS_SOIGNANTS hardcodé
+# dans hopital_model.py.
+# ──────────────────────────────────────────────────────────────────────────────
+configuration_simulation:
+
+  soignants_demo:
+    # Liste des soignants instanciés au démarrage de la simulation.
+    # Champs : nom, type_soignant, salle, heure_debut, heure_fin
+    # type_soignant doit correspondre à une clé de §roles_soignants.
+    # salle doit correspondre à un nœud du graphe plan_hopital (plan_hdj.py).
+    - nom: "Dr. Dupont"
+      type_soignant: "endocrinologue"
+      salle: "BMED1"
+      heure_debut: 8
+      heure_fin: 17
+    - nom: "Dr. Martin"
+      type_soignant: "endocrinologue"
+      salle: "BMED2"
+      heure_debut: 8
+      heure_fin: 17
+    - nom: "Dr. Blanc"
+      type_soignant: "ophtalmologue"
+      salle: "BCHIR"
+      heure_debut: 8
+      heure_fin: 17
+    - nom: "IDE Bilan"
+      type_soignant: "IDE"
+      salle: "SOIN"
+      heure_debut: 7
+      heure_fin: 19
+    - nom: "IDE Chimio"
+      type_soignant: "IDE"
+      salle: "SCHIM"
+      heure_debut: 7
+      heure_fin: 19
