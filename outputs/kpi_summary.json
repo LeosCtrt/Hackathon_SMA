@@ -55,12 +55,12 @@
   "patients_recurrents": {
     "has_ipp": true,
     "total_lignes": 627,
-    "ipp_uniques": 148,
-    "patients_recurrents": 77,
-    "pct_recurrents": 52.0,
-    "venues_moy": 3.08,
+    "ipp_uniques": 249,
+    "patients_recurrents": 115,
+    "pct_recurrents": 46.2,
+    "venues_moy": 2.52,
     "venues_max": 59,
-    "lignes_patients_recurrents": 385
+    "lignes_patients_recurrents": 493
   },
   "limites_metier": [
     "Instruction Gradation DGOS/R1/DSS/1A/2020/52 non encodée → tous cas B = pmsi_validation_required",

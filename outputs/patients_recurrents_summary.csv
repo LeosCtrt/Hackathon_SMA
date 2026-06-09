@@ -1,8 +1,8 @@
 indicateur,valeur
 total_lignes,627.0
-ipp_uniques,148.0
-patients_recurrents,77.0
-pct_recurrents,52.0
-venues_moy,3.08
+ipp_uniques,249.0
+patients_recurrents,115.0
+pct_recurrents,46.2
+venues_moy,2.52
 venues_max,59.0
-lignes_patients_recurrents,385.0
+lignes_patients_recurrents,493.0

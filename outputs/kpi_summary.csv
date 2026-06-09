@@ -12,9 +12,9 @@ scenario_B,retinographe_occ_pct,3.3,%
 scenario_B,fauteuil_occ_pct,10.0,%
 scenario_B,delai_attente_moyen_j,0.0,jours
 patients_recurrents,total_lignes,627.0,
-patients_recurrents,ipp_uniques,148.0,
-patients_recurrents,patients_recurrents,77.0,
-patients_recurrents,pct_recurrents,52.0,
-patients_recurrents,venues_moy,3.08,
+patients_recurrents,ipp_uniques,249.0,
+patients_recurrents,patients_recurrents,115.0,
+patients_recurrents,pct_recurrents,46.2,
+patients_recurrents,venues_moy,2.52,
 patients_recurrents,venues_max,59.0,
-patients_recurrents,lignes_patients_recurrents,385.0,
+patients_recurrents,lignes_patients_recurrents,493.0,

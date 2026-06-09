@@ -31,16 +31,17 @@ sys.path.insert(0, str(Path(__file__).parent))
 from core.agents.coordinateur import CoordinateurAgent
 
 # ── Chemins vers les fichiers de données ──────────────────────────────────
-# Si le fichier avec IPP est présent, il est utilisé en priorité pour 2020_2023.
+# Priorité : fichiers avec IPP si présents, sinon fallback vers les fichiers sans IPP.
 _data_dir = Path("./data")
-_ipp_candidates = list(_data_dir.glob("*IPP*.xlsx")) if _data_dir.exists() else []
+_all_ipp = list(_data_dir.glob("*IPP*.xlsx")) if _data_dir.exists() else []
+_ipp_2020_2023 = next((f for f in _all_ipp if "2020_2023" in f.name), None)
+_ipp_2024_2026 = next((f for f in _all_ipp if "2020_2023" not in f.name), None)
 
 DATA_FILES = {
-    "2020_2023": _ipp_candidates[0] if _ipp_candidates
-                 else Path("./data/Données_Externes_Endocrino_et_diabéto_2020_2023_A.xlsx"),
-    "2024_2026": Path("./data/Données_Externes_Endocrino_et_diabéto_A.xlsx"),
+    "2020_2023": _ipp_2020_2023 or Path("./data/Données_Externes_Endocrino_et_diabéto_2020_2023_A.xlsx"),
+    "2024_2026": _ipp_2024_2026 or Path("./data/Données_Externes_Endocrino_et_diabéto_A.xlsx"),
 }
-_IPP_ACTIVE = bool(_ipp_candidates)
+_IPP_ACTIVE = bool(_ipp_2020_2023 or _ipp_2024_2026)
 
 # Priorité diagnostique endocrino : E2x/E34 > E1x > E03-E07 > E66 > E8x métabolique.
 # Règle : si un séjour a plusieurs lignes avec codes différents, on garde le plus spécifique.
@@ -171,7 +172,8 @@ def load_data(annees: str) -> pd.DataFrame:
         df = pd.read_excel(path, engine="openpyxl")
         df["_source"] = label
         dfs.append(df)
-        print(f"[INFO] Chargé {label} : {len(df)} lignes")
+        ipp_tag = " avec IPP" if "IPP" in path.name else " (sans IPP)"
+        print(f"[INFO] Chargé {label}{ipp_tag} : {len(df)} lignes")
     if not dfs:
         raise FileNotFoundError(
             "Aucun fichier de données trouvé dans ~/claude_context_Hackathon_SMA/"
@@ -229,7 +231,8 @@ def main() -> None:
     df_raw = load_data(args.annees)
     ipp_metrics = compute_ipp_metrics(df_raw)
     if ipp_metrics.get("has_ipp"):
-        print(f"[INFO] Fichier IPP actif — {ipp_metrics['ipp_uniques']} patients uniques détectés\n")
+        n_ipp_files = sum(1 for f in [_ipp_2020_2023, _ipp_2024_2026] if f is not None)
+        print(f"[INFO] Fichiers IPP actifs ({n_ipp_files}/2) — {ipp_metrics['ipp_uniques']} patients uniques détectés\n")
     df = aggregate_by_sejour(df_raw)
 
     agent = CoordinateurAgent(n_days=args.days, max_parallel=args.parallel)
