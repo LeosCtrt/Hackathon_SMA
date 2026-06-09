@@ -32,8 +32,8 @@ from core.agents.coordinateur import CoordinateurAgent
 
 # ── Chemins vers les fichiers de données (hors repo) ───────────────────────
 DATA_FILES = {
-    "2020_2023": Path.home() / "claude_context_Hackathon_SMA/donnees_endocrino_2020_2023.xlsx",
-    "2024_2026": Path.home() / "claude_context_Hackathon_SMA/Données_Externes_Endocrino_et_diabéto.xlsx",
+    "2020_2023": Path("./data/Données_Externes_Endocrino_et_diabéto_2020_2023_A.xlsx"),
+    "2024_2026": Path("./data/Données_Externes_Endocrino_et_diabéto_A.xlsx"),
 }
 
 # Priorité diagnostique endocrino : E2x/E34 > E1x > E03-E07 > E66 > E8x métabolique.
