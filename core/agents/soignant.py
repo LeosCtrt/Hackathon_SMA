@@ -25,7 +25,7 @@ class SoignantAgent(Agent):
             if self.temps_soin_restant <= 0:
                 print(f"[{self.role} {self.nom}] Termine la consultation "
                       f"avec le patient {self.patient_actuel.unique_id}.")
-                self.model.notifier_fin_prestation(self, self.patient_actuel)
+                self.patient_actuel.nb_interactions += 1
                 self.patient_actuel = None
  
         # ── Cherche un patient en attente dans sa salle ────────────────────

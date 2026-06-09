@@ -30,7 +30,7 @@ class Patient(mesa.Agent):
         if self.etat == "SOIN":
             self.temps_soin_actuel -= 1
             if self.temps_soin_actuel <= 0:
-                self.fin_soin(avec_soignant=False)
+                self.fin_soin()
             return
  
         # ── En attente d'un soignant : ne bouge pas ────────────────────────
@@ -60,10 +60,8 @@ class Patient(mesa.Agent):
         else:
             self.etat = "SOIN"          # gestion autonome du timer
  
-    def fin_soin(self, avec_soignant=False):
+    def fin_soin(self):
         #Avance vers la prochaine étape du parcours.
-        if avec_soignant:
-            self.nb_interactions += 1
         self.cible_index += 1
         if self.cible_index >= len(self.parcours):
             self.etat = "TERMINE"

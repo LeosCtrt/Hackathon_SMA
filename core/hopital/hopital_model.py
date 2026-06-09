@@ -57,7 +57,7 @@ class HopitalModel(mesa.Model):
     # ──────────────────────────────────────────────────────────────────────
  
     def fournir_patient(self, soignant: SoignantAgent):
-        #Retourne un patient en ATTENTE_SOIN dans la salle du soignant, ou None.\"\"\"
+        #Retourne un patient en ATTENTE_SOIN dans la salle du soignant, ou None.
         for agent in self.grid.get_cell_list_contents([soignant.salle]):
             if isinstance(agent, Patient) and agent.etat == "ATTENTE_SOIN":
                 return agent
@@ -69,8 +69,7 @@ class HopitalModel(mesa.Model):
  
     def notifier_fin_prestation(self, soignant: SoignantAgent, patient: Patient):
         #Appelé quand le soignant termine : fait avancer le patient.
-        patient.fin_soin(avec_soignant=True)
- 
+        pass 
     # ──────────────────────────────────────────────────────────────────────
  
     def step(self):
