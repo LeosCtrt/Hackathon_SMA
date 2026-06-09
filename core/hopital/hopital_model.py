@@ -1,7 +1,7 @@
 import mesa
 from mesa.space import NetworkGrid
 
-from core.plan.plan_hdj import construire_plan_hdj
+from core.plan.plan_hopital import construire_plan_hdj
 from core.agents.salle import Salle
 from core.agents.soignant import SoignantAgent
 from core.agents.patient import Patient
