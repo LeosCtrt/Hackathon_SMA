@@ -1,0 +1,26 @@
+{
+  "scenario": [
+    "A — PMSI",
+    "B — Réorganisation"
+  ],
+  "planifies_simules": [
+    5,
+    33
+  ],
+  "gain_vs_A": [
+    0,
+    28
+  ],
+  "retinographe_occ_pct": [
+    3.3,
+    3.3
+  ],
+  "fauteuil_occ_pct": [
+    0.0,
+    10.0
+  ],
+  "delai_attente_moyen_j": [
+    0.0,
+    0.0
+  ]
+}

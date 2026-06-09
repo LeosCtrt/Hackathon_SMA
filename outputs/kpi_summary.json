@@ -1,0 +1,72 @@
+{
+  "meta": {
+    "source": "HDJ Agent — CHU Guyane",
+    "specialite": "Endocrinologie-Diabétologie",
+    "scenarios": "A (PMSI garde-fou) + B (réorganisation cible)",
+    "avertissement": "données TYPE_SEJOUR=EXT — simulation hypothétique, pas une reclassification PMSI",
+    "horizon_simulation_jours": 5,
+    "capacite_max_parallele": 6
+  },
+  "volume": {
+    "total_sejours_analyses": 409,
+    "hors_perimetre_endocrino": 37
+  },
+  "scenario_A": {
+    "label": "Garde-fou PMSI / réglementaire",
+    "planifies": 5,
+    "deja_structures_hdj": 4,
+    "convertibles_pmsi": 1,
+    "requires_review": 21,
+    "candidats_validation_pmsi": 21,
+    "uncertain": 325,
+    "non_planifies_horizon_plein": 0,
+    "delai_attente_moyen_j": 0.0,
+    "retinographe_occ_pct": 3.3,
+    "retinographe_pic_utilisation": 1,
+    "retinographe_capacite_totale": 1,
+    "fauteuil_occ_pct": 0.0,
+    "fauteuil_pic_utilisation": 0,
+    "fauteuil_capacite_totale": 2
+  },
+  "scenario_B": {
+    "label": "Cible réorganisation HDJ",
+    "simules": 33,
+    "dont_pmsi_validation_required": 29,
+    "uncertain_non_simules": 325,
+    "low_candidate_non_simules": 14,
+    "sans_creneau_horizon_plein": 0,
+    "gain_vs_A": 28,
+    "delai_attente_moyen_j": 0.0,
+    "retinographe_occ_pct": 3.3,
+    "retinographe_pic_utilisation": 1,
+    "retinographe_capacite_totale": 1,
+    "fauteuil_occ_pct": 10.0,
+    "fauteuil_pic_utilisation": 2,
+    "fauteuil_capacite_totale": 2,
+    "repartition_pathways": {
+      "bilan_annuel_diabete": 12,
+      "bilan_endocrino_metabolique": 9,
+      "test_dynamique_endocrinien": 3,
+      "already_hdj": 4,
+      "etp_diabete_obesite": 4,
+      "depistage_retinopathie": 1
+    }
+  },
+  "patients_recurrents": {
+    "has_ipp": true,
+    "total_lignes": 627,
+    "ipp_uniques": 148,
+    "patients_recurrents": 77,
+    "pct_recurrents": 52.0,
+    "venues_moy": 3.08,
+    "venues_max": 59,
+    "lignes_patients_recurrents": 385
+  },
+  "limites_metier": [
+    "Instruction Gradation DGOS/R1/DSS/1A/2020/52 non encodée → tous cas B = pmsi_validation_required",
+    "Données TYPE_SEJOUR=EXT uniquement → simulation hypothétique",
+    "Durées estimées (bilan=60min, rétino=90min, test_dyn=180min) → à valider équipe médicale",
+    "Actes CCAM pompe/capteur/Holter absents → parcours initiation_dispositif non détectable",
+    "Prototype aide à la décision — ne remplace pas une validation PMSI/DGOS"
+  ]
+}
