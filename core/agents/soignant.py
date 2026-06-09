@@ -21,7 +21,7 @@ class SoignantAgent(Agent):
             self.temps_soin_restant -= 1
             if self.temps_soin_restant <= 0:
                 # Fin de la prestation et transmission de l'info
-                print(f"[{self.role} {self.unique_id}] Termine la consultation avec le patient {nouveau_patient.unique_id}.")
+                print(f"[{self.role} {self.unique_id}] Termine la consultation avec le patient {self.patient_actuel.unique_id}.")
                 self.model.admin.notifier_fin_prestation(self, self.patient_actuel)
                 self.patient_actuel = None
         
