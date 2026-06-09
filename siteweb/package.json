@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "@tanstack/react-router": "^1.106.1",
+    "framer-motion": "^12.4.7",
+    "lucide-react": "^0.475.0",
+    "recharts": "^2.15.1",
+    "xlsx": "^0.18.5"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  }
+}
