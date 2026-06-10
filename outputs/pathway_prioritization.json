@@ -1,0 +1,141 @@
+{
+  "analyse": "Priorisation des parcours HDJ — score multicritère",
+  "methodologie": "Score pondéré : volume (30%), potentiel réorganisation (20%), valeur stratégique (20%), faisabilité (15%), facilité (10%), coordination (5%)",
+  "total_sejours_reference": 409,
+  "classement": [
+    {
+      "pathway": "bilan_annuel_diabete",
+      "label": "Bilan annuel diabète",
+      "volume": 12,
+      "pct_total": 2.9,
+      "score_priorite": 0.676,
+      "ressources_critiques": [
+        "aucune"
+      ],
+      "faisabilite": 0.85,
+      "valeur_strategique": 0.9,
+      "difficulte": 0.25,
+      "owners_suggeres": [
+        "Chef de service endocrinologie",
+        "Cadre HDJ",
+        "DIM/PMSI"
+      ],
+      "rang": 1
+    },
+    {
+      "pathway": "bilan_endocrino_metabolique",
+      "label": "Bilan endocrino-métabolique",
+      "volume": 9,
+      "pct_total": 2.2,
+      "score_priorite": 0.576,
+      "ressources_critiques": [
+        "multi-soignants"
+      ],
+      "faisabilite": 0.7,
+      "valeur_strategique": 0.8,
+      "difficulte": 0.45,
+      "owners_suggeres": [
+        "Chef de service",
+        "Direction des opérations",
+        "DIM/PMSI"
+      ],
+      "rang": 2
+    },
+    {
+      "pathway": "already_hdj",
+      "label": "Séjours déjà HDJ",
+      "volume": 4,
+      "pct_total": 1.0,
+      "score_priorite": 0.537,
+      "ressources_critiques": [
+        "existants"
+      ],
+      "faisabilite": 0.95,
+      "valeur_strategique": 0.6,
+      "difficulte": 0.1,
+      "owners_suggeres": [
+        "Cadre HDJ",
+        "DIM/PMSI"
+      ],
+      "rang": 3
+    },
+    {
+      "pathway": "etp_diabete_obesite",
+      "label": "ETP diabète / obésité",
+      "volume": 4,
+      "pct_total": 1.0,
+      "score_priorite": 0.487,
+      "ressources_critiques": [
+        "salle_etp",
+        "dieteticienne"
+      ],
+      "faisabilite": 0.75,
+      "valeur_strategique": 0.75,
+      "difficulte": 0.4,
+      "owners_suggeres": [
+        "Diététicienne référente",
+        "Cadre HDJ",
+        "Chef de service"
+      ],
+      "rang": 4
+    },
+    {
+      "pathway": "depistage_retinopathie",
+      "label": "Dépistage rétinopathie",
+      "volume": 1,
+      "pct_total": 0.2,
+      "score_priorite": 0.477,
+      "ressources_critiques": [
+        "retinographe"
+      ],
+      "faisabilite": 0.8,
+      "valeur_strategique": 0.65,
+      "difficulte": 0.3,
+      "owners_suggeres": [
+        "Chef de service ophtalmologie",
+        "Cadre HDJ"
+      ],
+      "rang": 5
+    },
+    {
+      "pathway": "test_dynamique_endocrinien",
+      "label": "Test dynamique endocrinien",
+      "volume": 3,
+      "pct_total": 0.7,
+      "score_priorite": 0.445,
+      "ressources_critiques": [
+        "fauteuil_medicalise"
+      ],
+      "faisabilite": 0.65,
+      "valeur_strategique": 0.7,
+      "difficulte": 0.55,
+      "owners_suggeres": [
+        "Chef de service endocrinologie",
+        "IDE référent",
+        "DIM/PMSI"
+      ],
+      "rang": 6
+    },
+    {
+      "pathway": "recurrent_patient_grouping",
+      "label": "Regroupement patients récurrents",
+      "volume": 115,
+      "pct_total": 46.2,
+      "score_priorite": 0.62,
+      "ressources_critiques": [
+        "à définir"
+      ],
+      "faisabilite": 0.55,
+      "valeur_strategique": 0.85,
+      "difficulte": 0.65,
+      "owners_suggeres": [
+        "Chef de service",
+        "DIM/PMSI",
+        "Cadre HDJ",
+        "DSI/Data"
+      ],
+      "rang": 7
+    }
+  ],
+  "note": "Le classement est une aide à la priorisation organisationnelle. La décision finale appartient aux équipes médicales et à la direction."
+}

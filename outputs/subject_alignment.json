@@ -1,0 +1,45 @@
+{
+  "sujet": "HDJ Agent — Système multi-agents pour optimisation capacitaire et création d'hôpitaux de jour",
+  "alignement": [
+    {
+      "critere": "Jumeau organisationnel simplifié HDJ",
+      "couvert": true,
+      "comment": "HopitalModel (Mesa) + graphe NetworkX + EnvironnementAgent (horaires, flux)"
+    },
+    {
+      "critere": "Agents patients / soignants / salles / environnement / coordinateur",
+      "couvert": true,
+      "comment": "5 agents implémentés : Patient, SoignantAgent, Salle, EnvironnementAgent, CoordinateurAgent"
+    },
+    {
+      "critere": "Scénarios A/B",
+      "couvert": true,
+      "comment": "A=5 planifiés (PMSI), B=33 simulés — gain +28"
+    },
+    {
+      "critere": "Indicateurs volume convertible / occupation / saturation / délai / ressources critiques",
+      "couvert": true,
+      "comment": "Dashboard A/B + capacity_simulation.json (6 configurations testées)"
+    },
+    {
+      "critere": "Logique exploitable par l'hôpital",
+      "couvert": true,
+      "comment": "YAML métier validé + triage organisationnel + note de décision + Streamlit app"
+    },
+    {
+      "critere": "Base prête dashboard / interface Lovable",
+      "couvert": true,
+      "comment": "17 fichiers JSON/CSV dans outputs/ + API statique consommable directement"
+    },
+    {
+      "critere": "Fragmentation parcours / patients récurrents",
+      "couvert": true,
+      "comment": "IPP : 249 patients, 46.2% récurrents"
+    },
+    {
+      "critere": "Médico-économique",
+      "couvert": true,
+      "comment": "3 niveaux estimations (prudent/opérationnel/transformation) — à valider DIM"
+    }
+  ]
+}

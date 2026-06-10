@@ -1,3 +1,33 @@
+## HDJ Agent — Outil hospitalier d'aide à la décision capacitaire et organisationnelle
+
+## Installation
+```bash
+pip install -r requirements.txt
+```
+
+## Lancer l'analyse
+```bash
+python demo_coordinateur.py           # simulation scénarios A/B + métriques IPP
+python export_dashboard_outputs.py    # génère tous les outputs dans outputs/
+```
+
+## Lancer l'application hospitalière
+```bash
+streamlit run streamlit_app.py
+```
+
+## Sources
+- **Données IPP** : analyse de fragmentation parcours patients (2020–2026)
+- **YAML** : règles métier endocrino (CCAM, CIM-10, durées, pathways, ressources)
+- **Excel** : modèle de structure hospitalière paramétrable (intégration future)
+- **Outputs** : 17 fichiers JSON/CSV + note de décision dans `outputs/`
+
+## Positionnement
+Outil opérationnel d'aide à la décision organisationnelle et capacitaire.
+Validation médicale, DIM/PMSI et gouvernance hospitalière requises avant mise en œuvre.
+
+---
+
 ## HDJ-Agent — Jumeau Numérique pour l'Hôpital de Jour (Endocrinologie)
 HDJ-Agent est un prototype de simulateur à base de Systèmes Multi-Agents (SMA) conçu pour modéliser, optimiser et restructurer les flux de patients au sein de l'Hôpital de Jour (HDJ) en Diabétologie et Endocrinologie du CHU de Guyane.
 

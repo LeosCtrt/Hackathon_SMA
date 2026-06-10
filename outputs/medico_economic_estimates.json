@@ -1,0 +1,88 @@
+{
+  "analyse": "Estimation médico-économique HDJ — CHU Guyane Endocrino-Diabétologie",
+  "avertissement": "Ces estimations sont à valider avec le DIM/PMSI avant toute utilisation financière officielle. Il ne s'agit pas d'une projection de recettes certifiée.",
+  "parametres": {
+    "forfait_hdj_reference_euros": 420.0,
+    "source_forfait": "Paramètre de référence — à adapter au GHS réel CHU Guyane",
+    "durees_yaml": {
+      "duree_retinographie_min": 90,
+      "duree_bilan_diabete_min": 60,
+      "duree_test_dynamique_min": 180,
+      "duree_consultation_min": 30,
+      "fauteuil_quantite": 2,
+      "retinographe_quantite": 1,
+      "slots_par_jour": 18
+    }
+  },
+  "niveaux": [
+    {
+      "niveau": "prudent",
+      "label": "Niveau 1 — Prudent (PMSI garde-fou)",
+      "description": "Seulement les séjours avec référence PMSI solide (scénario A). Approche conservatrice, risque réglementaire minimal.",
+      "volume_concerne": 5,
+      "hypothese": "Forfait journalier HDJ = 420.0€ (à valider DIM)",
+      "valeur_organisationnelle": "5 journées HDJ structurées vs consultations fragmentées",
+      "potentiel_valorisation_a_valider": 2100.0,
+      "unite": "€/période analysée",
+      "validation_requise": "DIM + Chef de service",
+      "decision_possible": "Ouverture ou consolidation HDJ existant",
+      "non_financial_value": [
+        "Réduction des passages multiples pour les cas déjà HDJ",
+        "Meilleure traçabilité PMSI des journées HDJ",
+        "Facturation sécurisée"
+      ]
+    },
+    {
+      "niveau": "operationnel",
+      "label": "Niveau 2 — Opérationnel (réorganisation après validation)",
+      "description": "Après validation DIM/PMSI du scénario B. Inclut les candidats organisationnels non encore codés en HDJ.",
+      "volume_concerne": 33,
+      "gain_vs_prudent": 28,
+      "hypothese": "Forfait journalier HDJ = 420.0€ (à valider DIM)",
+      "valeur_organisationnelle": "+28 séjours supplémentaires structurables en HDJ après validation",
+      "potentiel_valorisation_a_valider": 13860.0,
+      "unite": "€/période analysée",
+      "validation_requise": "DIM + Chef de service + Direction des opérations + Instruction Gradation DGOS/R1/DSS/1A/2020/52",
+      "decision_possible": "Extension HDJ + nouveaux parcours",
+      "non_financial_value": [
+        "Réduction de la fragmentation des parcours",
+        "Meilleure coordination soignants",
+        "Libération de créneaux de consultation",
+        "Amélioration expérience patient"
+      ]
+    },
+    {
+      "niveau": "transformation",
+      "label": "Niveau 3 — Transformation (création pathways HDJ prioritaires)",
+      "description": "Inclut le regroupement des patients récurrents et la création de nouveaux parcours HDJ dédiés. Horizon 12–24 mois.",
+      "volume_concerne": 115,
+      "lignes_fragmentees": 493,
+      "hypothese": "Potentiel de regroupement estimé sur 115 patients récurrents. Forfait journalier HDJ = 420.0€ (à valider DIM).",
+      "valeur_organisationnelle": "Réduction de 493 passages fragmentés pour 115 patients",
+      "potentiel_valorisation_a_valider": "À calculer avec DIM après définition des protocoles HDJ",
+      "unite": "Non chiffrable sans protocoles définis",
+      "validation_requise": "DIM + Chef de service + Cadre HDJ + Direction des opérations + DSI",
+      "decision_possible": "Plan de transformation ambulatoire à 18 mois",
+      "non_financial_value": [
+        "Jusqu'à 493 passages évités si tous regroupés",
+        "Amélioration significative expérience patient chronique",
+        "Réduction charge administrative (admissions multiples)",
+        "Données pour benchmarking inter-CHU",
+        "Base pour certification HAS parcours coordonnés"
+      ]
+    }
+  ],
+  "synthese": {
+    "volume_total_analyse": 409,
+    "vol_prudent": 5,
+    "vol_operationnel": 33,
+    "patients_recurrents_impactes": 115
+  },
+  "valeur_non_financiere": {
+    "moins_de_deplacements": "115 patients récurrents, 493 lignes fragmentées",
+    "meilleure_coordination": "Regroupement actes → moins d'intervenants séparés",
+    "anticipation_ressources": "Planification déterministe vs flux imprévu",
+    "aide_priorisation_gouvernance": "Dashboard décisionnel avec données réelles"
+  },
+  "note_estimation": "Estimation opérationnelle basée sur le forfait journalier HDJ de référence (420.0€/journée). À valider avec le DIM/PMSI avant toute projection financière officielle."
+}

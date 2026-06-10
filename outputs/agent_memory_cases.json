@@ -1,0 +1,60 @@
+{
+  "description": "Mémoire opérationnelle — leçons issues de la simulation",
+  "note": "Fichier préparé pour intégration future avec base vectorielle (Qdrant).",
+  "cas": [
+    {
+      "id": "MC001",
+      "type": "cas_performant",
+      "pathway": "bilan_annuel_diabete",
+      "observation": "Fort volume détecté (12 cas) — parcours prioritaire",
+      "lecon": "Le bilan annuel diabète est le pathway le plus fréquent — à prioriser en création HDJ",
+      "prochaine_action": "Valider éligibilité PMSI avec DIM, définir protocole HDJ dédié",
+      "confiance": 0.85
+    },
+    {
+      "id": "MC002",
+      "type": "cas_performant",
+      "pathway": "bilan_endocrino_metabolique",
+      "observation": "9 cas — coordination élevée requise",
+      "lecon": "Pathway nécessitant plusieurs soignants — créer protocole multi-intervenants",
+      "prochaine_action": "Cartographier les soignants disponibles pour ce parcours",
+      "confiance": 0.75
+    },
+    {
+      "id": "MC003",
+      "type": "fragmentation_detectee",
+      "pathway": "recurrent_patient_grouping",
+      "observation": "115 patients récurrents, 59 venues max",
+      "lecon": "Fragmentation transversale — des patients reviennent de nombreuses fois sans structure HDJ",
+      "prochaine_action": "Identifier protocole de regroupement pour patients à ≥ 4 venues",
+      "confiance": 0.9
+    },
+    {
+      "id": "MC004",
+      "type": "limite_donnees",
+      "pathway": "tous",
+      "observation": "Données TYPE_SEJOUR=EXT uniquement — pas de GHS HDJ dans les données sources",
+      "lecon": "La simulation est hypothétique — les KPIs représentent un potentiel, pas une réalité HDJ",
+      "prochaine_action": "Demander extraction PMSI avec TYPE_SEJOUR=H (HDJ) pour comparaison",
+      "confiance": 1.0
+    },
+    {
+      "id": "MC005",
+      "type": "limite_reglementaire",
+      "pathway": "tous_cas_B",
+      "observation": "Instruction Gradation DGOS/R1/DSS/1A/2020/52 non encodée",
+      "lecon": "Tous les cas scénario B portent pmsi_validation_required — sous-estimation possible du scénario A",
+      "prochaine_action": "Encoder les critères GHS sans nuitée de l'Instruction Gradation",
+      "confiance": 1.0
+    },
+    {
+      "id": "MC006",
+      "type": "ressource_critique",
+      "pathway": "depistage_retinopathie",
+      "observation": "Rétinographe ×1 — ressource limitante pour 1 cas",
+      "lecon": "Le rétinographe est un goulot potentiel si le volume dépistage augmente",
+      "prochaine_action": "Simuler impact +1 rétinographe sur la capacité",
+      "confiance": 0.8
+    }
+  ]
+}

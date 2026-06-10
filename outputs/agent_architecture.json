@@ -1,0 +1,153 @@
+{
+  "systeme": "HDJ Agent — Architecture multi-agents",
+  "description": "Système multi-agents pour l'optimisation capacitaire et la création d'hôpitaux de jour",
+  "agents": [
+    {
+      "nom": "Patient Agent",
+      "statut": "implemented",
+      "fichier": "core/agents/patient.py",
+      "classe": "Patient",
+      "role": "Simule le parcours physique d'un patient dans l'HDJ (salle → salle)",
+      "entrees": "Parcours injecté par HopitalModel [(salle, libelle, duree)]",
+      "etat_interne": "Position courante, état (TRANSIT/ATTENTE_SOIN/SOIN/TERMINE), historique",
+      "decisions": "Navigation entre salles, attente soignant, fin de parcours",
+      "sorties": "Historique de mouvement, nb_interactions, état final",
+      "interactions": [
+        "SoignantAgent",
+        "Salle",
+        "EnvironnementAgent"
+      ],
+      "valeur_hospitaliere": "Jumeau du flux patient HDJ — mesure temps de passage et attentes"
+    },
+    {
+      "nom": "Soignant Agent",
+      "statut": "implemented",
+      "fichier": "core/agents/soignant.py",
+      "classe": "SoignantAgent",
+      "role": "Réalise les actes de soin selon son rôle (IDE, endocrinologue, ophtalmologue, diététicienne)",
+      "entrees": "Type rôle (chargé depuis YAML §roles_soignants), salle assignée",
+      "etat_interne": "Disponibilité, patient en cours, durée acte (YAML)",
+      "decisions": "Accepter/refuser patient, durée de l'acte",
+      "sorties": "Signal fin de prestation, compteur interactions",
+      "interactions": [
+        "Patient Agent",
+        "Salle",
+        "EnvironnementAgent"
+      ],
+      "valeur_hospitaliere": "Modélise la disponibilité soignant et les goulots humains"
+    },
+    {
+      "nom": "Salle / Resource Agent",
+      "statut": "implemented",
+      "fichier": "core/agents/salle.py",
+      "classe": "Salle",
+      "role": "Représente une salle HDJ avec capacité, type et occupation",
+      "entrees": "Nom, type_salle, capacité (injectés par HopitalModel)",
+      "etat_interne": "Occupation courante, capacité totale",
+      "decisions": "Passif — géré par les agents patients/soignants",
+      "sorties": "Occupation en temps réel",
+      "interactions": [
+        "Patient Agent",
+        "SoignantAgent"
+      ],
+      "valeur_hospitaliere": "Mesure l'utilisation réelle des salles HDJ"
+    },
+    {
+      "nom": "Environnement Agent",
+      "statut": "implemented",
+      "fichier": "core/agents/environnement.py",
+      "classe": "EnvironnementAgent",
+      "role": "Gère les contraintes globales : horaires, retards, indisponibilités, événements",
+      "entrees": "YAML §contraintes_systeme.horaires_simulation",
+      "etat_interne": "Horloge globale, files d'attente, retards actifs, métriques",
+      "decisions": "Ouverture/fermeture service, signalement saturation",
+      "sorties": "Métriques temps réel, alertes saturation",
+      "interactions": [
+        "tous les agents"
+      ],
+      "valeur_hospitaliere": "Jumeau des contraintes opérationnelles de l'HDJ"
+    },
+    {
+      "nom": "Triage Organisationnel Agent",
+      "statut": "implemented",
+      "fichier": "core/decision/organizational_triage.py",
+      "classe": "fonction triage_pathways()",
+      "role": "Classe chaque séjour dans une catégorie décisionnelle HDJ",
+      "entrees": "DataFrame séjours + règles YAML hdj_eligibility",
+      "etat_interne": "Compteurs par catégorie, règles utilisées",
+      "decisions": "already_hdj / pmsi_guardrail / target_reorg / recurrent / out_of_scope",
+      "sorties": "triage_summary.json",
+      "interactions": [
+        "CoordinateurAgent",
+        "hdj_eligibility"
+      ],
+      "valeur_hospitaliere": "Priorisation organisationnelle — qui peut aller en HDJ"
+    },
+    {
+      "nom": "Coordinateur / Scheduler Agent",
+      "statut": "implemented",
+      "fichier": "core/agents/coordinateur.py",
+      "classe": "CoordinateurAgent",
+      "role": "Ordonnanceur HDJ — planifie les séjours sur l'horizon (scénarios A et B)",
+      "entrees": "DataFrame séjours agrégés, ressources limitantes (YAML)",
+      "etat_interne": "Schedulers A/B, KPIs A/B, liste patients",
+      "decisions": "Éligibilité HDJ, affectation créneaux, gestion saturation",
+      "sorties": "Dashboard A/B, taux occupation ressources, pathways planifiés",
+      "interactions": [
+        "hdj_eligibility",
+        "RessourceLimitante",
+        "Scheduler"
+      ],
+      "valeur_hospitaliere": "Simulation déterministe scénarios A/B — aide à la planification"
+    },
+    {
+      "nom": "Evaluateur Médico-économique Agent",
+      "statut": "implemented",
+      "fichier": "core/decision/medico_economic.py",
+      "classe": "fonction build_medico_economic_estimates()",
+      "role": "Produit des estimations médico-économiques à 3 niveaux",
+      "entrees": "KPIs A/B, métriques IPP, paramètres YAML",
+      "etat_interne": "Calculs estimation basés sur forfait HDJ paramétrable",
+      "decisions": "Niveau prudent / opérationnel / transformation",
+      "sorties": "medico_economic_estimates.json",
+      "interactions": [
+        "CoordinateurAgent",
+        "pathway_reconstruction"
+      ],
+      "valeur_hospitaliere": "Estimation opérationnelle pour gouvernance — à valider DIM"
+    },
+    {
+      "nom": "Memory / Learning Agent",
+      "statut": "partial",
+      "fichier": "outputs/agent_memory_cases.json (préparé)",
+      "classe": "N/A — couche mémoire à implémenter",
+      "role": "Capitalise les cas performants, les anomalies et les leçons apprises",
+      "entrees": "Résultats de simulation, feedback équipe",
+      "etat_interne": "Cas mémorisés, patterns reconnus",
+      "decisions": "Suggérer des ajustements basés sur l'expérience accumulée",
+      "sorties": "agent_memory_cases.json",
+      "interactions": [
+        "CoordinateurAgent",
+        "tous les agents"
+      ],
+      "valeur_hospitaliere": "Amélioration continue — détection précoce de dérives",
+      "next_step": "Intégration Qdrant ou base vectorielle pour mémoire sémantique"
+    },
+    {
+      "nom": "Governance Dashboard Agent",
+      "statut": "partial",
+      "fichier": "streamlit_app.py",
+      "classe": "Application Streamlit",
+      "role": "Interface hospitalière de visualisation et décision",
+      "entrees": "outputs/*.json (générés par export_dashboard_outputs.py)",
+      "etat_interne": "Lecture seule — affichage agrégats",
+      "decisions": "Navigation entre vues, export note décision",
+      "sorties": "Dashboard interactif pour jury / équipe hospitalière",
+      "interactions": [
+        "tous les outputs JSON"
+      ],
+      "valeur_hospitaliere": "Interface opérationnelle pour équipe soignante et direction",
+      "next_step": "Connexion temps réel aux agents Mesa via WebSocket"
+    }
+  ]
+}

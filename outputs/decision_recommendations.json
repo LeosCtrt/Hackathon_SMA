@@ -1,0 +1,98 @@
+{
+  "analyse": "Recommandations décisionnelles HDJ — aide à la gouvernance",
+  "recommandations": [
+    {
+      "recommandation": "Créer ou renforcer le parcours HDJ : Bilan annuel diabète",
+      "preuve_donnees": "12 séjours identifiés (2.9% du total)",
+      "score_priorite": 0.676,
+      "etapes_mise_en_oeuvre": [
+        "Valider l'éligibilité PMSI avec le DIM",
+        "Définir le protocole HDJ avec le chef de service",
+        "Vérifier la disponibilité des ressources critiques",
+        "Former les soignants au parcours",
+        "Lancer un pilote sur 3 mois",
+        "Évaluer et ajuster"
+      ],
+      "risques": [
+        "Validation PMSI requise avant facturation",
+        "Disponibilité soignants à confirmer",
+        "Données actuelles TYPE_SEJOUR=EXT — réel HDJ à mesurer"
+      ],
+      "validation_requise": {
+        "DIM_PMSI": true,
+        "chef_de_service": true,
+        "direction_operations": true,
+        "gouvernance": false
+      },
+      "owners": [
+        "Chef de service endocrinologie",
+        "Cadre HDJ",
+        "DIM/PMSI"
+      ]
+    },
+    {
+      "recommandation": "Créer ou renforcer le parcours HDJ : Bilan endocrino-métabolique",
+      "preuve_donnees": "9 séjours identifiés (2.2% du total)",
+      "score_priorite": 0.576,
+      "etapes_mise_en_oeuvre": [
+        "Valider l'éligibilité PMSI avec le DIM",
+        "Définir le protocole HDJ avec le chef de service",
+        "Vérifier la disponibilité des ressources critiques",
+        "Former les soignants au parcours",
+        "Lancer un pilote sur 3 mois",
+        "Évaluer et ajuster"
+      ],
+      "risques": [
+        "Validation PMSI requise avant facturation",
+        "Disponibilité soignants à confirmer",
+        "Données actuelles TYPE_SEJOUR=EXT — réel HDJ à mesurer"
+      ],
+      "validation_requise": {
+        "DIM_PMSI": true,
+        "chef_de_service": true,
+        "direction_operations": false,
+        "gouvernance": false
+      },
+      "owners": [
+        "Chef de service",
+        "Direction des opérations",
+        "DIM/PMSI"
+      ]
+    },
+    {
+      "recommandation": "Créer ou renforcer le parcours HDJ : Séjours déjà HDJ",
+      "preuve_donnees": "4 séjours identifiés (1.0% du total)",
+      "score_priorite": 0.537,
+      "etapes_mise_en_oeuvre": [
+        "Valider l'éligibilité PMSI avec le DIM",
+        "Définir le protocole HDJ avec le chef de service",
+        "Vérifier la disponibilité des ressources critiques",
+        "Former les soignants au parcours",
+        "Lancer un pilote sur 3 mois",
+        "Évaluer et ajuster"
+      ],
+      "risques": [
+        "Validation PMSI requise avant facturation",
+        "Disponibilité soignants à confirmer",
+        "Données actuelles TYPE_SEJOUR=EXT — réel HDJ à mesurer"
+      ],
+      "validation_requise": {
+        "DIM_PMSI": true,
+        "chef_de_service": true,
+        "direction_operations": false,
+        "gouvernance": false
+      },
+      "owners": [
+        "Cadre HDJ",
+        "DIM/PMSI"
+      ]
+    }
+  ],
+  "avertissement": "Ces recommandations sont des propositions basées sur l'analyse des données. Elles ne constituent pas une prescription médicale ni une décision PMSI.",
+  "prochaines_etapes_globales": [
+    "Présenter les résultats au comité de direction médicale",
+    "Mandater le DIM pour valider les cas les plus fréquents",
+    "Définir un plan de transformation HDJ sur 12 mois",
+    "Mettre en place un suivi des KPIs d'occupation HDJ"
+  ]
+}

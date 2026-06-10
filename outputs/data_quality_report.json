@@ -1,0 +1,51 @@
+{
+  "verdict": "not_usable",
+  "verdict_detail": "Données insuffisantes pour la simulation. Corriger les colonnes manquantes avant de relancer.",
+  "dimensions": {
+    "n_lignes": 627,
+    "n_colonnes": 35
+  },
+  "colonnes": {
+    "requises_presentes": [
+      "NUM SEJOUR",
+      "CODE DIAG",
+      "LISTE ACTES CCAM MVT",
+      "TYPE SEJOUR"
+    ],
+    "requises_manquantes": [],
+    "taux_manquants": {
+      "NUM SEJOUR": 0.0,
+      "CODE DIAG": 0.0,
+      "LISTE ACTES CCAM MVT": 0.6124,
+      "TYPE SEJOUR": 0.0,
+      "NUM IPP PATIENT": 0.0,
+      "CODE ACTE": 0.6124,
+      "DATE ENTREE SEJ": 0.0,
+      "HEURE ENTREE SEJ": 0.0,
+      "HEURE SORTIE SEJ": 0.0016,
+      "SPECIALITE OPERATEUR": 0.6124
+    }
+  },
+  "ipp": {
+    "present": true,
+    "ipp_uniques": 249,
+    "lignes_sans_ipp": 0,
+    "taux_recurrence": 0.4618
+  },
+  "qualite": {
+    "sejours_doublons": 69,
+    "type_sejour_ext_seulement": true,
+    "couverture_actes_ccam": 0.3876,
+    "dates_coherentes": true
+  },
+  "warnings": [
+    "CODE ACTE : 61% de valeurs manquantes",
+    "SPECIALITE OPERATEUR : 61% de valeurs manquantes",
+    "Toutes les données sont TYPE_SEJOUR=EXT (consultations externes) — simulation HDJ hypothétique, pas une reclassification PMSI réelle",
+    "Seulement 39% des lignes ont des actes CCAM — éligibilité HDJ sous-estimée"
+  ],
+  "blocking_issues": [
+    "LISTE ACTES CCAM MVT : 61% de valeurs manquantes"
+  ],
+  "note": "Ce rapport qualité est produit automatiquement. Une validation par le DIM est recommandée avant toute décision opérationnelle."
+}

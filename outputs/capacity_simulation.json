@@ -1,0 +1,253 @@
+{
+  "analyse": "Simulation capacité HDJ — configurations comparées",
+  "note": "Durées issues du YAML métier (estimation opérationnelle basée sur les durées paramétrées). À valider avec l'équipe soignante avant mise en œuvre.",
+  "configurations": [
+    {
+      "configuration": "config_actuelle",
+      "label": "Configuration actuelle",
+      "description": "Ressources actuelles : rétinographe ×1, fauteuil ×2, 6 places/créneau",
+      "parametres": {
+        "horizon_jours": 5,
+        "places_creneau": 6,
+        "retinographe_total": 1,
+        "fauteuil_total": 2
+      },
+      "resultats": {
+        "n_days": 5,
+        "max_parallel": 6,
+        "retinographe_capacite": 1,
+        "fauteuil_capacite": 2,
+        "scenario_A": {
+          "planifies": 5,
+          "non_planifies": 0,
+          "delai_attente_moyen_j": 0.0,
+          "retinographe_occ_pct": 3.3,
+          "fauteuil_occ_pct": 0.0,
+          "retinographe_pic": 1,
+          "fauteuil_pic": 0
+        },
+        "scenario_B": {
+          "simules": 33,
+          "non_planifies": 0,
+          "gain_vs_A": 28,
+          "delai_attente_moyen_j": 0.0,
+          "retinographe_occ_pct": 3.3,
+          "fauteuil_occ_pct": 10.0,
+          "retinographe_pic": 1,
+          "fauteuil_pic": 2
+        }
+      },
+      "gain_vs_baseline_A": 0,
+      "gain_vs_baseline_B": 0,
+      "goulot_detranglement": "Capacité de planification (pas de saturation ressource)",
+      "message_decisionnel": "Pas de gain supplémentaire — contrainte non liée aux ressources",
+      "estimation_method": "duration_from_yaml — estimation opérationnelle"
+    },
+    {
+      "configuration": "plus_1_fauteuil",
+      "label": "+1 fauteuil médicalisé",
+      "description": "Ajout d'un fauteuil → 3 fauteuils disponibles",
+      "parametres": {
+        "horizon_jours": 5,
+        "places_creneau": 6,
+        "retinographe_total": 1,
+        "fauteuil_total": 4
+      },
+      "resultats": {
+        "n_days": 5,
+        "max_parallel": 6,
+        "retinographe_capacite": 1,
+        "fauteuil_capacite": 4,
+        "scenario_A": {
+          "planifies": 5,
+          "non_planifies": 0,
+          "delai_attente_moyen_j": 0.0,
+          "retinographe_occ_pct": 3.3,
+          "fauteuil_occ_pct": 0.0,
+          "retinographe_pic": 1,
+          "fauteuil_pic": 0
+        },
+        "scenario_B": {
+          "simules": 33,
+          "non_planifies": 0,
+          "gain_vs_A": 28,
+          "delai_attente_moyen_j": 0.0,
+          "retinographe_occ_pct": 3.3,
+          "fauteuil_occ_pct": 6.7,
+          "retinographe_pic": 1,
+          "fauteuil_pic": 3
+        }
+      },
+      "gain_vs_baseline_A": 0,
+      "gain_vs_baseline_B": 0,
+      "goulot_detranglement": "Capacité de planification (pas de saturation ressource)",
+      "message_decisionnel": "Pas de gain supplémentaire — contrainte non liée aux ressources",
+      "estimation_method": "duration_from_yaml — estimation opérationnelle"
+    },
+    {
+      "configuration": "plus_1_retino",
+      "label": "+1 rétinographe",
+      "description": "Ajout d'un rétinographe → 2 disponibles",
+      "parametres": {
+        "horizon_jours": 5,
+        "places_creneau": 6,
+        "retinographe_total": 3,
+        "fauteuil_total": 2
+      },
+      "resultats": {
+        "n_days": 5,
+        "max_parallel": 6,
+        "retinographe_capacite": 3,
+        "fauteuil_capacite": 2,
+        "scenario_A": {
+          "planifies": 5,
+          "non_planifies": 0,
+          "delai_attente_moyen_j": 0.0,
+          "retinographe_occ_pct": 1.7,
+          "fauteuil_occ_pct": 0.0,
+          "retinographe_pic": 1,
+          "fauteuil_pic": 0
+        },
+        "scenario_B": {
+          "simules": 33,
+          "non_planifies": 0,
+          "gain_vs_A": 28,
+          "delai_attente_moyen_j": 0.0,
+          "retinographe_occ_pct": 1.7,
+          "fauteuil_occ_pct": 10.0,
+          "retinographe_pic": 1,
+          "fauteuil_pic": 2
+        }
+      },
+      "gain_vs_baseline_A": 0,
+      "gain_vs_baseline_B": 0,
+      "goulot_detranglement": "Capacité de planification (pas de saturation ressource)",
+      "message_decisionnel": "Pas de gain supplémentaire — contrainte non liée aux ressources",
+      "estimation_method": "duration_from_yaml — estimation opérationnelle"
+    },
+    {
+      "configuration": "horizon_10j",
+      "label": "Horizon 10 jours",
+      "description": "Horizon de planification étendu à 10 jours ouvrés",
+      "parametres": {
+        "horizon_jours": 10,
+        "places_creneau": 6,
+        "retinographe_total": 1,
+        "fauteuil_total": 2
+      },
+      "resultats": {
+        "n_days": 10,
+        "max_parallel": 6,
+        "retinographe_capacite": 1,
+        "fauteuil_capacite": 2,
+        "scenario_A": {
+          "planifies": 5,
+          "non_planifies": 0,
+          "delai_attente_moyen_j": 0.0,
+          "retinographe_occ_pct": 1.7,
+          "fauteuil_occ_pct": 0.0,
+          "retinographe_pic": 1,
+          "fauteuil_pic": 0
+        },
+        "scenario_B": {
+          "simules": 33,
+          "non_planifies": 0,
+          "gain_vs_A": 28,
+          "delai_attente_moyen_j": 0.0,
+          "retinographe_occ_pct": 1.7,
+          "fauteuil_occ_pct": 5.0,
+          "retinographe_pic": 1,
+          "fauteuil_pic": 2
+        }
+      },
+      "gain_vs_baseline_A": 0,
+      "gain_vs_baseline_B": 0,
+      "goulot_detranglement": "Capacité de planification (pas de saturation ressource)",
+      "message_decisionnel": "Pas de gain supplémentaire — contrainte non liée aux ressources",
+      "estimation_method": "duration_from_yaml — estimation opérationnelle"
+    },
+    {
+      "configuration": "capacite_etendue",
+      "label": "Capacité étendue (+1 créneau/jour)",
+      "description": "8 places simultanées au lieu de 6 par créneau",
+      "parametres": {
+        "horizon_jours": 5,
+        "places_creneau": 8,
+        "retinographe_total": 1,
+        "fauteuil_total": 2
+      },
+      "resultats": {
+        "n_days": 5,
+        "max_parallel": 8,
+        "retinographe_capacite": 1,
+        "fauteuil_capacite": 2,
+        "scenario_A": {
+          "planifies": 5,
+          "non_planifies": 0,
+          "delai_attente_moyen_j": 0.0,
+          "retinographe_occ_pct": 3.3,
+          "fauteuil_occ_pct": 0.0,
+          "retinographe_pic": 1,
+          "fauteuil_pic": 0
+        },
+        "scenario_B": {
+          "simules": 33,
+          "non_planifies": 0,
+          "gain_vs_A": 28,
+          "delai_attente_moyen_j": 0.0,
+          "retinographe_occ_pct": 3.3,
+          "fauteuil_occ_pct": 10.0,
+          "retinographe_pic": 1,
+          "fauteuil_pic": 2
+        }
+      },
+      "gain_vs_baseline_A": 0,
+      "gain_vs_baseline_B": 0,
+      "goulot_detranglement": "Capacité de planification (pas de saturation ressource)",
+      "message_decisionnel": "Pas de gain supplémentaire — contrainte non liée aux ressources",
+      "estimation_method": "duration_from_yaml — estimation opérationnelle"
+    },
+    {
+      "configuration": "configuration_optimisee",
+      "label": "Configuration optimisée",
+      "description": "+1 fauteuil + horizon 10 jours + 8 places/créneau",
+      "parametres": {
+        "horizon_jours": 10,
+        "places_creneau": 8,
+        "retinographe_total": 1,
+        "fauteuil_total": 4
+      },
+      "resultats": {
+        "n_days": 10,
+        "max_parallel": 8,
+        "retinographe_capacite": 1,
+        "fauteuil_capacite": 4,
+        "scenario_A": {
+          "planifies": 5,
+          "non_planifies": 0,
+          "delai_attente_moyen_j": 0.0,
+          "retinographe_occ_pct": 1.7,
+          "fauteuil_occ_pct": 0.0,
+          "retinographe_pic": 1,
+          "fauteuil_pic": 0
+        },
+        "scenario_B": {
+          "simules": 33,
+          "non_planifies": 0,
+          "gain_vs_A": 28,
+          "delai_attente_moyen_j": 0.0,
+          "retinographe_occ_pct": 1.7,
+          "fauteuil_occ_pct": 3.3,
+          "retinographe_pic": 1,
+          "fauteuil_pic": 3
+        }
+      },
+      "gain_vs_baseline_A": 0,
+      "gain_vs_baseline_B": 0,
+      "goulot_detranglement": "Capacité de planification (pas de saturation ressource)",
+      "message_decisionnel": "Pas de gain supplémentaire — contrainte non liée aux ressources",
+      "estimation_method": "duration_from_yaml — estimation opérationnelle"
+    }
+  ],
+  "recommandation": "La contrainte principale est organisationnelle, pas liée aux équipements."
+}

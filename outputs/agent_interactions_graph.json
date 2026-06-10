@@ -1,0 +1,116 @@
+{
+  "nodes": [
+    {
+      "id": "Patient Agent",
+      "statut": "implemented",
+      "fichier": "core/agents/patient.py"
+    },
+    {
+      "id": "Soignant Agent",
+      "statut": "implemented",
+      "fichier": "core/agents/soignant.py"
+    },
+    {
+      "id": "Salle / Resource Agent",
+      "statut": "implemented",
+      "fichier": "core/agents/salle.py"
+    },
+    {
+      "id": "Environnement Agent",
+      "statut": "implemented",
+      "fichier": "core/agents/environnement.py"
+    },
+    {
+      "id": "Triage Organisationnel Agent",
+      "statut": "implemented",
+      "fichier": "core/decision/organizational_triage.py"
+    },
+    {
+      "id": "Coordinateur / Scheduler Agent",
+      "statut": "implemented",
+      "fichier": "core/agents/coordinateur.py"
+    },
+    {
+      "id": "Evaluateur Médico-économique Agent",
+      "statut": "implemented",
+      "fichier": "core/decision/medico_economic.py"
+    },
+    {
+      "id": "Memory / Learning Agent",
+      "statut": "partial",
+      "fichier": "outputs/agent_memory_cases.json (préparé)"
+    },
+    {
+      "id": "Governance Dashboard Agent",
+      "statut": "partial",
+      "fichier": "streamlit_app.py"
+    }
+  ],
+  "edges": [
+    {
+      "from": "Patient Agent",
+      "to": "SoignantAgent",
+      "type": "interaction_soin"
+    },
+    {
+      "from": "Patient Agent",
+      "to": "Salle / Resource Agent",
+      "type": "occupation"
+    },
+    {
+      "from": "Patient Agent",
+      "to": "Environnement Agent",
+      "type": "contrainte_horaire"
+    },
+    {
+      "from": "SoignantAgent",
+      "to": "Patient Agent",
+      "type": "prestation"
+    },
+    {
+      "from": "SoignantAgent",
+      "to": "Environnement Agent",
+      "type": "disponibilite"
+    },
+    {
+      "from": "Environnement Agent",
+      "to": "Patient Agent",
+      "type": "retard_evenement"
+    },
+    {
+      "from": "Coordinateur / Scheduler Agent",
+      "to": "Triage Organisationnel Agent",
+      "type": "eligibilite"
+    },
+    {
+      "from": "Coordinateur / Scheduler Agent",
+      "to": "Evaluateur Médico-économique Agent",
+      "type": "kpis"
+    },
+    {
+      "from": "Triage Organisationnel Agent",
+      "to": "Coordinateur / Scheduler Agent",
+      "type": "classification"
+    },
+    {
+      "from": "Evaluateur Médico-économique Agent",
+      "to": "Governance Dashboard Agent",
+      "type": "estimations"
+    },
+    {
+      "from": "Coordinateur / Scheduler Agent",
+      "to": "Governance Dashboard Agent",
+      "type": "dashboard"
+    },
+    {
+      "from": "Memory / Learning Agent",
+      "to": "Coordinateur / Scheduler Agent",
+      "type": "recommandation"
+    },
+    {
+      "from": "Governance Dashboard Agent",
+      "to": "Memory / Learning Agent",
+      "type": "feedback"
+    }
+  ]
+}

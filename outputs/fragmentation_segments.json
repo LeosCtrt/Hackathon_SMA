@@ -1,0 +1,55 @@
+{
+  "segments": [
+    {
+      "tranche": "1_venue",
+      "label": "1 venue",
+      "n_patients": 134,
+      "lignes_associees": 134,
+      "niveau_fragmentation": "pas_de_fragmentation",
+      "interpretation": "Venue unique — pas de signal de fragmentation.",
+      "action_recommandee": "Analyse au cas par cas"
+    },
+    {
+      "tranche": "2_3_venues",
+      "label": "2 3 venue(s)",
+      "n_patients": 72,
+      "lignes_associees": 167,
+      "niveau_fragmentation": "fragmentation_faible",
+      "interpretation": "2–3 venues — fragmentation légère, potentiel de regroupement à évaluer.",
+      "action_recommandee": "Évaluation éligibilité HDJ"
+    },
+    {
+      "tranche": "4_9_venues",
+      "label": "4 9 venue(s)",
+      "n_patients": 34,
+      "lignes_associees": 158,
+      "niveau_fragmentation": "fragmentation_moderee",
+      "interpretation": "4–9 venues — fragmentation notable, regroupement en HDJ recommandé.",
+      "action_recommandee": "Regroupement HDJ recommandé"
+    },
+    {
+      "tranche": "10_20_venues",
+      "label": "10 20 venue(s)",
+      "n_patients": 7,
+      "lignes_associees": 88,
+      "niveau_fragmentation": "fragmentation_forte",
+      "interpretation": "10–20 venues — fragmentation forte, création ou extension HDJ justifiée.",
+      "action_recommandee": "Création / renforcement HDJ justifié"
+    },
+    {
+      "tranche": "plus_20_venues",
+      "label": "plus 20 venue(s)",
+      "n_patients": 2,
+      "lignes_associees": 80,
+      "niveau_fragmentation": "hyper_recurrence",
+      "interpretation": "Plus de 20 venues — hyper-récurrence, prise en charge structurée urgente.",
+      "action_recommandee": "Prise en charge structurée prioritaire"
+    }
+  ],
+  "synthese": {
+    "patients_total": 249,
+    "patients_fragmentes": 115,
+    "potentiel_regroupement": "fort"
+  },
+  "note": "Classification basée sur le nombre de venues par IPP anonymisé."
+}

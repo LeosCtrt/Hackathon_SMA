@@ -1,0 +1,42 @@
+{
+  "analyse": "Reconstruction des parcours fragmentés — données IPP anonymisées",
+  "note": "Aucun IPP individuel n'est exposé dans ce rapport.",
+  "totaux": {
+    "ipp_uniques": 249,
+    "patients_non_recurrents": 134,
+    "patients_recurrents": 115,
+    "pct_recurrents": 46.2,
+    "venues_max": 59,
+    "venues_moy": 2.52,
+    "lignes_patients_recurrents": 493,
+    "pct_lignes_recurrents": 78.6
+  },
+  "distribution_venues": {
+    "1_venue": 134,
+    "2_3_venues": 72,
+    "4_9_venues": 34,
+    "10_20_venues": 7,
+    "plus_20_venues": 2
+  },
+  "potentiel_regroupement_hdj": "fort",
+  "top_diagnostics_recurrents": {
+    "E8768": 107,
+    "E149": 33,
+    "E162": 29,
+    "E1150": 24,
+    "E1190": 21,
+    "E1198": 19,
+    "E161": 14,
+    "E109": 13,
+    "E1110": 12,
+    "E139": 10
+  },
+  "top_actes_ccam_recurrents": {
+    "ACQK001,ACQN001,DEQP003,YYYY600,ZBQH001,ZBQK002,ZCQH001": 56,
+    "ACQK001,YYYY600": 16,
+    "DEQP003,DEQP005,ECQH010,YYYY600,ZBQK002": 15,
+    "ACQK001,ACQN001,DEQP003,YYYY600": 15,
+    "DEQP003": 14
+  },
+  "interpretation_globale": "46.2% des patients ont plusieurs venues sur la période analysée. Ce signal de fragmentation représente un potentiel de structuration en HDJ pour réduire les passages multiples, améliorer la coordination soignants et optimiser la tarification GHS journalière."
+}
