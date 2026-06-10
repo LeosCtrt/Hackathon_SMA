@@ -44,7 +44,7 @@ class HopitalModel(mesa.Model):
             ag = SoignantAgent(self, nom, type_soignant, salle, hd, hf)
             self.soignants.append(ag)
             self.grid.place_agent(ag, salle)
-            print(f"  → {type_soignant:15s} {nom:12s} affecté à {salle}")
+            print(f"  -> {type_soignant:15s} {nom:12s} affecte a {salle}")
  
         # ── Patient ───────────────────────────────────────────────────────
         self.patient = Patient(self, parcours, "ACC")

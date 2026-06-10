@@ -1325,10 +1325,9 @@ elif page == "Modélisation parcours patient":
     st.caption("Simulation multi-agents du déplacement d'un patient dans l'HDJ")
 
     st.markdown(
-        "Cette animation illustre le moteur multi-agents de parcours patient dans l'HDJ. "
-        "Lorsque des données hospitalières sont uploadées, l'animation est contextualisée "
-        "à partir du fichier actif de session. Elle ne remplace pas une reconstruction "
-        "exhaustive de tous les parcours patients : elle visualise un parcours représentatif."
+        "Cette animation visualise un parcours patient représentatif et les interactions "
+        "opérationnelles du service : déplacements, attentes, occupation des ressources "
+        "et interventions des soignants."
     )
 
     active_source   = st.session_state.get("active_dataset_source", "demo")
@@ -1343,7 +1342,7 @@ elif page == "Modélisation parcours patient":
         st.info(
             "Les données uploadées permettent de contextualiser l'animation, mais ne contiennent "
             "pas encore toutes les étapes spatiales réelles du patient. L'animation utilise donc "
-            "un parcours représentatif choisi selon le type de séjour, le diagnostic et les actes détectés."
+            "un scénario typique dérivé des données actives."
         )
         if _anim_import_ok:
             inferred = infer_representative_parcours_from_active_data(df_active)
