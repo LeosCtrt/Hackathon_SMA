@@ -165,6 +165,7 @@ pages = [
     "Impact médico-économique",
     "Note de décision",
     "Paramétrage hospitalier",
+    "Modélisation parcours patient",
 ]
 page = st.sidebar.radio("Navigation", pages)
 st.sidebar.markdown("---")
@@ -1309,4 +1310,95 @@ elif page == "Paramétrage hospitalier":
             file_name="note_decision_hdj_agent.md",
             mime="text/markdown",
             key="param_dl_note",
+        )
+
+# ── Modélisation parcours patient ─────────────────────────────────────────
+elif page == "Modélisation parcours patient":
+    import subprocess as _subprocess
+    try:
+        from demo_parcours_animation import infer_representative_parcours_from_active_data
+        _anim_import_ok = True
+    except Exception as _anim_import_err:
+        _anim_import_ok = False
+
+    st.title("Modélisation parcours patient")
+    st.caption("Simulation multi-agents du déplacement d'un patient dans l'HDJ")
+
+    st.markdown(
+        "Cette animation illustre le moteur multi-agents de parcours patient dans l'HDJ. "
+        "Lorsque des données hospitalières sont uploadées, l'animation est contextualisée "
+        "à partir du fichier actif de session. Elle ne remplace pas une reconstruction "
+        "exhaustive de tous les parcours patients : elle visualise un parcours représentatif."
+    )
+
+    active_source   = st.session_state.get("active_dataset_source", "demo")
+    df_active       = st.session_state.get("standardized_hospital_data")
+    analysis_result = st.session_state.get("active_results")
+
+    if active_source == "uploaded" and df_active is not None:
+        st.success(
+            "Mode établissement — animation contextualisée à partir du fichier uploadé "
+            "pendant cette session."
+        )
+        st.info(
+            "Les données uploadées permettent de contextualiser l'animation, mais ne contiennent "
+            "pas encore toutes les étapes spatiales réelles du patient. L'animation utilise donc "
+            "un parcours représentatif choisi selon le type de séjour, le diagnostic et les actes détectés."
+        )
+        if _anim_import_ok:
+            inferred = infer_representative_parcours_from_active_data(df_active)
+        else:
+            inferred = {
+                "parcours_type": "demo",
+                "type":          "Parcours démo (import indisponible)",
+                "raison":        str(_anim_import_err),
+                "nb_sejours":    None,
+            }
+    else:
+        st.info("Mode démonstration — animation générée à partir d'un parcours patient exemple.")
+        inferred = {
+            "parcours_type": "demo",
+            "type":          "Parcours démo complet",
+            "raison":        "Aucun fichier hospitalier actif.",
+            "nb_sejours":    None,
+        }
+
+    # ── Fiche parcours ───────────────────────────────────────────────────────
+    col_i1, col_i2, col_i3 = st.columns(3)
+    col_i1.metric(
+        "Source active",
+        "Fichier uploadé (session)" if active_source == "uploaded" else "Démonstration",
+    )
+    col_i2.metric(
+        "Séjours analysés",
+        inferred["nb_sejours"] if inferred["nb_sejours"] is not None else "—",
+    )
+    col_i3.metric("Parcours choisi", inferred["type"])
+    st.caption(f"Raison : {inferred['raison']}")
+
+    # ── Bouton génération ────────────────────────────────────────────────────
+    gif_path      = Path("outputs/plan_balade_soignants.gif")
+    parcours_type = inferred.get("parcours_type", "demo")
+
+    if st.button("Générer / regénérer l'animation", type="primary", key="parcours_regen"):
+        with st.spinner("Simulation multi-agents en cours…"):
+            _res = _subprocess.run(
+                ["python", "demo_parcours_animation.py",
+                 "--parcours-type", parcours_type],
+                capture_output=True, text=True, timeout=120,
+                cwd=str(Path(__file__).parent),
+            )
+        if _res.returncode == 0:
+            st.success("Animation générée avec succès.")
+        else:
+            st.error("Erreur lors de la génération de l'animation.")
+            st.code(_res.stdout + _res.stderr, language="text")
+
+    # ── Affichage GIF ────────────────────────────────────────────────────────
+    if gif_path.exists() and gif_path.stat().st_size > 0:
+        st.image(str(gif_path), caption=f"Simulation spatiale — {inferred['type']}")
+    else:
+        st.warning(
+            "L'animation n'est pas encore disponible. "
+            "Cliquez sur « Générer / regénérer l'animation » pour la produire."
         )
