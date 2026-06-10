@@ -80,10 +80,23 @@ def build_data_quality_report(
     # ── Taux de valeurs manquantes ────────────────────────────────────────
     # Un taux élevé de nulls réduit la couverture mais n'empêche pas l'analyse
     # → toujours un avertissement, jamais un blocage.
+    # Messages par colonne — LISTE ACTES CCAM MVT est géré par la vérification ccam_coverage
+    _MISSING_MSG = {
+        "LISTE ACTES CCAM MVT": None,  # traité via ccam_coverage ci-dessous
+        "CODE ACTE": (
+            "CODE ACTE : couverture partielle — prudence sur les règles CCAM."
+        ),
+        "SPECIALITE OPERATEUR": (
+            "SPECIALITE OPERATEUR : couverture partielle — "
+            "l'analyse reste centrée sur endocrino-diabéto."
+        ),
+    }
     missing_rates = {col: _missing_rate(df, col) for col in IMPORTANT_COLUMNS}
     for col, rate in missing_rates.items():
         if rate > 0.3:
-            warnings.append(f"{col} : {rate:.0%} de valeurs manquantes — couverture réduite")
+            msg = _MISSING_MSG.get(col, f"{col} : couverture partielle ({rate:.0%}) — données à compléter si disponibles.")
+            if msg is not None:
+                warnings.append(msg)
 
     # ── IPP ───────────────────────────────────────────────────────────────
     has_ipp = "NUM IPP PATIENT" in df.columns
@@ -130,8 +143,8 @@ def build_data_quality_report(
         ccam_coverage = round(len(non_empty) / n_lines, 4) if n_lines else 0.0
         if ccam_coverage < 0.5:
             warnings.append(
-                f"Seulement {ccam_coverage:.0%} des lignes ont des actes CCAM "
-                "— éligibilité HDJ sous-estimée"
+                f"Couverture CCAM : {ccam_coverage:.0%} des lignes ont des actes renseignés. "
+                "L'outil sous-estime volontairement les candidats HDJ lorsque les actes sont absents."
             )
 
     # ── Cohérence dates ───────────────────────────────────────────────────

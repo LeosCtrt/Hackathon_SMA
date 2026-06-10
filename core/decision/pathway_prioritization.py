@@ -142,7 +142,7 @@ def prioritize_pathways(
             "description": (
                 "Les patients multi-venues (> 1 consultation sur la période) représentent "
                 "un potentiel de regroupement en HDJ quelle que soit la pathologie. "
-                "Ce levier s'applique à tous les parcours ranked_hdj_pathways."
+                "Ce levier s'applique à l'ensemble des parcours HDJ prioritaires identifiés."
             ),
             "volume": rec,
             "pct_total": ipp_metrics.get("pct_recurrents", 0),

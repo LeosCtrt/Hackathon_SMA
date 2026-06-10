@@ -9,7 +9,7 @@ DEUX DIMENSIONS DE DÉCISION (v3 — scénarios A et B) :
     → Si l'Instruction Gradation (DGOS/R1/DSS/1A/2020/52) est requise et absente
       → cas marqué requires_review, non planifié automatiquement
 
-  SCÉNARIO B — Cible de réorganisation HDJ (simulation pitch)
+  SCÉNARIO B — Cible de réorganisation HDJ (réorganisation cible)
     → reorganization_potential + candidate_pathway
     → Planifie high_hdj_candidate et medium_hdj_candidate
     → Ne planifie PAS low_hdj_candidate (comptés séparément)

@@ -236,7 +236,7 @@ def _build_memory_cases(kpis_B: dict, ipp_metrics: dict) -> dict:
                 "type": "limite_donnees",
                 "pathway": "tous",
                 "observation": "Données TYPE_SEJOUR=EXT uniquement — pas de GHS HDJ dans les données sources",
-                "lecon": "La simulation est hypothétique — les KPIs représentent un potentiel, pas une réalité HDJ",
+                "lecon": "La simulation est une réorganisation organisationnelle à valider DIM/PMSI — les KPIs représentent un potentiel de structuration HDJ à instruire.",
                 "prochaine_action": "Demander extraction PMSI avec TYPE_SEJOUR=H (HDJ) pour comparaison",
                 "confiance": 1.0,
             },

@@ -9,7 +9,7 @@ Rôle (source: Défi 5 HDJ Agent, ELBAHRI/BELIN/CARTIER, CHU Guyane) :
     (unité HDJ existante ou acte CCAM documenté dans le YAML + MCO §1.1/§1.5).
     Objectif : ne pas surestimer la facturation GHS réelle.
 
-  SCÉNARIO B — Cible de réorganisation HDJ (simulation pitch)
+  SCÉNARIO B — Cible de réorganisation HDJ (réorganisation cible)
     Planifie les candidats high_hdj_candidate et medium_hdj_candidate même
     sans validation PMSI complète. Tous les cas planifiés en B mais non validés
     PMSI portent le flag pmsi_validation_required=True.
@@ -290,7 +290,7 @@ class CoordinateurAgent:
 
         # ── Scénario B ──────────────────────────────────────────────────────
         print(f"\n  {'─'*64}")
-        print("  SCÉNARIO B — Cible réorganisation HDJ  [simulation pitch]")
+        print("  SCÉNARIO B — Cible réorganisation HDJ  [réorganisation cible]")
         print(f"  {'─'*64}")
         print(f"  {'Simulés B  [simulated_pending_validation]':<50} {self.kpis_B.scheduled:>5}")
         print(f"  {'dont pmsi_validation_required=True':<50} {self.kpis_B.pmsi_validation_required:>5}")

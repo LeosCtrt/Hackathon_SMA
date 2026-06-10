@@ -84,7 +84,10 @@ if page == "Synthèse exécutive":
         st.warning("Fichier kpi_summary.json introuvable. Lancez `python export_dashboard_outputs.py`.")
         st.stop()
 
-    st.warning(kpi["meta"].get("avertissement", ""))
+    st.info(
+        "Données TYPE_SEJOUR=EXT (consultations externes) — "
+        "simulation organisationnelle à valider DIM/PMSI avant mise en œuvre."
+    )
 
     vol = kpi.get("volume", {})
     sc_A = kpi.get("scenario_A", {})
@@ -94,9 +97,9 @@ if page == "Synthèse exécutive":
     st.subheader("Chiffres clés")
     c1, c2, c3, c4 = st.columns(4)
     _metric(c1, "Séjours analysés", vol.get("total_sejours_analyses", "—"))
-    _metric(c2, "Planifiés Scénario A", sc_A.get("planifies", "—"))
-    _metric(c3, "Simulés Scénario B", sc_B.get("simules", "—"))
-    _metric(c4, "Gain B vs A", f"+{sc_B.get('gain_vs_A', 0)}", " séj.")
+    _metric(c2, "Scénario prudent (A)", sc_A.get("planifies", "—"))
+    _metric(c3, "Scénario réorganisation (B)", sc_B.get("simules", "—"))
+    _metric(c4, "Gain réorganisation vs prudent", f"+{sc_B.get('gain_vs_A', 0)}", " séj.")
 
     st.subheader("Fragmentation patients")
     c1, c2, c3, c4 = st.columns(4)
@@ -117,16 +120,30 @@ Validation DIM/PMSI réalisable en 4–6 semaines · Aucun investissement équip
 </div>
 """, unsafe_allow_html=True)
 
-    st.subheader("Ce que l'outil permet à l'hôpital")
-    st.markdown("""
-- **Quantifier le potentiel HDJ** : identifier les séjours ambulatoires restructurables parmi les consultations EXT existantes
-- **Prioriser les pathways** : score multicritère basé sur le volume réel, la faisabilité et la valeur stratégique
+    col_a, col_b = st.columns(2)
+    with col_a:
+        st.subheader("Ce que l'outil permet à l'hôpital")
+        st.markdown("""
+- **Quantifier le potentiel HDJ** : séjours ambulatoires restructurables parmi les consultations existantes
+- **Prioriser les parcours** : score multicritère sur volume réel, faisabilité et valeur stratégique
 - **Simuler la capacité** : comparer 6 configurations ressources (rétinographe, fauteuil, horizon)
-- **Détecter la fragmentation** : cartographier les patients multi-venues pour réduire les déplacements inutiles
-- **Outiller la gouvernance** : note de décision téléchargeable, estimation médico-économique à 3 niveaux, recommandations prêtes pour comité médical
-
-> *Prototype d'aide à la décision organisationnelle — validation DIM/PMSI et gouvernance hospitalière requises avant mise en œuvre.*
+- **Détecter la fragmentation** : cartographier les patients multi-venues, réduire les déplacements inutiles
+- **Outiller la gouvernance** : note téléchargeable, estimation médico-économique, recommandations comité médical
 """)
+    with col_b:
+        st.subheader("Pourquoi c'est actionnable maintenant")
+        st.markdown("""
+- Données IPP réelles disponibles (2020–2026, 249 patients uniques)
+- Règles métier centralisées dans `hdj_metier.yaml` (CCAM, CIM-10, durées, ressources)
+- Scénarios reproductibles et paramétrables
+- Note décisionnelle générée automatiquement
+- Limites PMSI explicitées — pas de sur-promesse réglementaire
+""")
+
+    st.caption(
+        "Prototype d'aide à la décision organisationnelle — "
+        "validation DIM/PMSI et gouvernance hospitalière requises avant mise en œuvre."
+    )
 
     st.markdown("---")
     st.subheader("Occupation ressources critiques")
@@ -152,12 +169,18 @@ elif page == "Qualité des données":
 
     verdict = q.get("verdict", "")
     detail = q.get("verdict_detail", "")
+    _VERDICT_LABELS = {
+        "usable_for_decision_support": "Données exploitables — qualité suffisante",
+        "usable_with_warnings": "Données exploitables avec réserves",
+        "not_usable": "Données insuffisantes — simulation non fiable",
+    }
+    verdict_label = _VERDICT_LABELS.get(verdict, verdict)
     if verdict == "usable_for_decision_support":
-        st.markdown(f"<div class='ok-box'>✅ <b>{verdict}</b> — {detail}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='ok-box'>✅ <b>{verdict_label}</b><br>{detail}</div>", unsafe_allow_html=True)
     elif verdict == "usable_with_warnings":
-        st.markdown(f"<div class='warn-box'>⚠️ <b>{verdict}</b> — {detail}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='warn-box'>⚠️ <b>{verdict_label}</b><br>{detail}</div>", unsafe_allow_html=True)
     else:
-        st.error(f"❌ {verdict} — {detail}")
+        st.error(f"❌ {verdict_label} — {detail}")
 
     st.subheader("Dimensions")
     dim = q.get("dimensions", {})
@@ -241,9 +264,9 @@ elif page == "Scénarios HDJ":
     synt = sm.get("synthese_comparative", {})
     c1, c2, c3, c4 = st.columns(4)
     _metric(c1, "Séjours référence", synt.get("volume_reference", "—"))
-    _metric(c2, "PMSI guardrail (A)", synt.get("volume_pmsi_guardrail", "—"))
-    _metric(c3, "Réorganisation (B)", synt.get("volume_reorganisation_cible", "—"))
-    _metric(c4, "Gain B vs A", f"+{synt.get('gain_reorganisation_vs_guardrail', 0)}", " séj.")
+    _metric(c2, "Scénario prudent (A)", synt.get("volume_pmsi_guardrail", "—"))
+    _metric(c3, "Réorganisation cible (B)", synt.get("volume_reorganisation_cible", "—"))
+    _metric(c4, "Gain réorganisation vs prudent", f"+{synt.get('gain_reorganisation_vs_guardrail', 0)}", " séj.")
 
     st.subheader("Détail par scénario")
     for sc in sm.get("scenarios", []):
@@ -276,10 +299,16 @@ elif page == "Capacité / Saturation":
 
     st.caption(cap.get("note", ""))
 
+    st.subheader("Lecture capacitaire")
+    st.markdown("""
+- La capacité matérielle actuelle permet d'absorber les **33 séjours simulés** du scénario de réorganisation.
+- L'ajout de fauteuils ou rétinographes réduit l'occupation, mais n'augmente pas le volume tant que la **validation DIM/PMSI** et les **protocoles HDJ** ne sont pas formalisés.
+- Le goulot principal est **organisationnel et réglementaire**, pas matériel.
+""")
+
     rows = []
     for cfg in cap.get("configurations", []):
         p = cfg.get("parametres", {})
-        rA = cfg.get("resultats", {}).get("scenario_A", {})
         rB = cfg.get("resultats", {}).get("scenario_B", {})
         rows.append({
             "Configuration": cfg["label"],
@@ -287,13 +316,11 @@ elif page == "Capacité / Saturation":
             "Places/créneau": p.get("places_creneau"),
             "Rétino ×": p.get("retinographe_total"),
             "Fauteuil ×": p.get("fauteuil_total"),
-            "Planifiés A": rA.get("planifies"),
-            "Simulés B": rB.get("simules"),
-            "Gain vs base B": cfg.get("gain_vs_baseline_B"),
-            "Fauteuil occ B (%)": rB.get("fauteuil_occ_pct"),
-            "Goulot": cfg.get("goulot_detranglement"),
+            "Séjours B absorbables": rB.get("simules"),
+            "Occupation fauteuil B (%)": rB.get("fauteuil_occ_pct"),
+            "Message": cfg.get("message_decisionnel", "—"),
         })
-    st.dataframe(pd.DataFrame(rows), use_container_width=True)
+    st.dataframe(pd.DataFrame(rows), use_container_width=True, height=280)
 
 # ──────────────────────────────────────────────────────────────────────────
 elif page == "Priorisation HDJ":
@@ -358,27 +385,42 @@ elif page == "Impact médico-économique":
         st.stop()
 
     st.warning(eco.get("avertissement", ""))
-    st.info(eco.get("note_estimation", ""))
+
+    st.markdown("""
+<div style='background:#fff3cd;border-left:5px solid #ffc107;padding:12px 16px;border-radius:6px;margin-bottom:12px'>
+<b>Hypothèse paramétrable</b> : forfait journalier HDJ de référence.<br>
+Valeur d'exemple : <b>420 €/journée</b>, à remplacer par le tarif validé DIM/PMSI du CHU Guyane.<br>
+<small>Les montants affichés ci-dessous sont indicatifs — non certifiés, non opposables.</small>
+</div>
+""", unsafe_allow_html=True)
 
     vnf = eco.get("valeur_non_financiere", {})
-    st.subheader("Valeur non financière")
+    st.subheader("Valeur organisationnelle (non financière)")
+    _VNF_LABELS = {
+        "moins_de_deplacements": "Moins de déplacements patients",
+        "meilleure_coordination": "Meilleure coordination soignants",
+        "anticipation_ressources": "Anticipation des ressources",
+        "aide_priorisation_gouvernance": "Aide à la priorisation et gouvernance",
+    }
     for k, v in vnf.items():
-        st.write(f"- **{k.replace('_', ' ').capitalize()}** : {v}")
+        label = _VNF_LABELS.get(k, k.replace("_", " ").capitalize())
+        st.write(f"- **{label}** : {v}")
 
-    st.subheader("3 niveaux d'estimation")
+    st.subheader("3 niveaux d'estimation indicative")
     for niv in eco.get("niveaux", []):
         with st.expander(f"**{niv['label']}** — {niv['volume_concerne']} cas"):
-            st.write(niv.get("description", ""))
-            st.write(f"**Hypothèse :** {niv.get('hypothese', '—')}")
-            pot = niv.get("potentiel_valorisation_a_valider", "—")
-            if isinstance(pot, (int, float)):
-                st.metric("Valorisation estimée (à valider DIM)", f"{pot:,.0f}€")
-            else:
-                st.write(f"**Valorisation :** {pot}")
-            st.caption(f"Validation requise : {niv.get('validation_requise', '—')}")
+            st.write(niv.get("valeur_organisationnelle", niv.get("description", "")))
             st.write("**Valeur non financière :**")
             for v in niv.get("non_financial_value", []):
                 st.write(f"  - {v}")
+            pot = niv.get("potentiel_valorisation_a_valider", "—")
+            if isinstance(pot, (int, float)):
+                st.caption(
+                    f"Valorisation indicative selon paramètre tarifaire : {pot:,.0f} € — non certifiée."
+                )
+            else:
+                st.caption(f"Valorisation : {pot}")
+            st.caption(f"Validation requise : {niv.get('validation_requise', '—')}")
 
 # ──────────────────────────────────────────────────────────────────────────
 elif page == "Note de décision":

@@ -39,11 +39,10 @@
     "dates_coherentes": true
   },
   "warnings": [
-    "LISTE ACTES CCAM MVT : 61% de valeurs manquantes — couverture réduite",
-    "CODE ACTE : 61% de valeurs manquantes — couverture réduite",
-    "SPECIALITE OPERATEUR : 61% de valeurs manquantes — couverture réduite",
+    "CODE ACTE : couverture partielle — prudence sur les règles CCAM.",
+    "SPECIALITE OPERATEUR : couverture partielle — l'analyse reste centrée sur endocrino-diabéto.",
     "Toutes les données sont TYPE_SEJOUR=EXT (consultations externes) — simulation organisationnelle à valider DIM/PMSI, pas une reclassification PMSI réelle",
-    "Seulement 39% des lignes ont des actes CCAM — éligibilité HDJ sous-estimée"
+    "Couverture CCAM : 39% des lignes ont des actes renseignés. L'outil sous-estime volontairement les candidats HDJ lorsque les actes sont absents."
   ],
   "blocking_issues": [],
   "note": "Ce rapport qualité est produit automatiquement. Une validation par le DIM est recommandée avant toute décision opérationnelle."

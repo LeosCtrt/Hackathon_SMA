@@ -121,7 +121,7 @@
     {
       "levier": "recurrent_patient_grouping",
       "label": "Regroupement patients récurrents (levier transversal)",
-      "description": "Les patients multi-venues (> 1 consultation sur la période) représentent un potentiel de regroupement en HDJ quelle que soit la pathologie. Ce levier s'applique à tous les parcours ranked_hdj_pathways.",
+      "description": "Les patients multi-venues (> 1 consultation sur la période) représentent un potentiel de regroupement en HDJ quelle que soit la pathologie. Ce levier s'applique à l'ensemble des parcours HDJ prioritaires identifiés.",
       "volume": 115,
       "pct_total": 46.2,
       "valeur_strategique": 0.85,
