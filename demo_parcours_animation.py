@@ -97,6 +97,44 @@ _COL_MED_ACTIF  = "#E67E22"   # orange- medecin avec patient
 _COL_PARA_LIBRE = "#8E44AD"   # violet- paramed disponible
 _COL_PARA_ACTIF = "#C0392B"   # rouge - paramed avec patient
 
+# Points de passage intermediaires pour les transitions couloir->couloir.
+# Chaque paire de noeuds de transit adjacents qui forment un angle donne
+# un ou deux points de "coin de couloir" pour eviter les diagonales visuelles.
+# Geometrie derivee des BANDES du plan (plan_hopital.py).
+#   CHM4 : bande horizontale y=40, x=[46,158]
+#   CHM3 : bande horizontale y=66, x=[46,132]
+#   CHM1 : bande horizontale y=66, x=[132,220]
+#   CHM2 : bande horizontale y=40, x=[150,220]
+#   CHM11: bande verticale   x=46, y=[42,66]  (connecteur CHM3/CHM4)
+#   CHM5 : bande verticale   x=22, y=[56,88]
+#   CHM6 : bande horizontale y=50, x=[22,46]
+_TRANSIT_WAYPOINTS: dict = {
+    # CHM3 (y=66) <-> CHM4 (y=40) : L-path via la jonction CHM11 en x=46
+    ("CHM3",  "CHM4"):  [(46, 66), (46, 40)],
+    ("CHM4",  "CHM3"):  [(46, 40), (46, 66)],
+    # CHM5 (x=22) <-> CHM3 (y=66) : coin en haut-gauche du plan
+    ("CHM5",  "CHM3"):  [(22, 66)],
+    ("CHM3",  "CHM5"):  [(22, 66)],
+    # CHM6 (y=50) <-> CHM11 (x=46) : coin gauche
+    ("CHM6",  "CHM11"): [(46, 50)],
+    ("CHM11", "CHM6"):  [(46, 50)],
+    # CHM11 (x=46) <-> CHM3 (y=66) : haut de CHM11
+    ("CHM11", "CHM3"):  [(46, 66)],
+    ("CHM3",  "CHM11"): [(46, 66)],
+    # CHM11 (x=46) <-> CHM4 (y=40) : bas de CHM11
+    ("CHM11", "CHM4"):  [(46, 42)],
+    ("CHM4",  "CHM11"): [(46, 42)],
+    # CHM1 (y=66) <-> CHM2 (y=40) : coin droit via x~176
+    ("CHM1",  "CHM2"):  [(176, 66), (176, 40)],
+    ("CHM2",  "CHM1"):  [(176, 40), (176, 66)],
+    # CHM1 <-> PATIO : descente depuis corridor haut
+    ("CHM1",  "PATIO"): [(151, 66)],
+    ("PATIO", "CHM1"):  [(151, 66)],
+    # CHM2 <-> PATIO : montee depuis corridor bas
+    ("CHM2",  "PATIO"): [(151, 40)],
+    ("PATIO", "CHM2"):  [(151, 40)],
+}
+
 
 # ---- Modele instrumente --------------------------------------------------
 
@@ -134,9 +172,21 @@ def _adaptive_k(pt_a, pt_b, px_per_frame: float = 4.5) -> int:
 
 
 def _waypoints_between(node_a: str, node_b: str) -> list:
-    """Waypoints visuels centre->porte->porte->centre entre deux noeuds adjacents."""
-    cur   = np.array(POS[node_a], float)
-    nxt   = np.array(POS[node_b], float)
+    """Waypoints visuels entre deux noeuds adjacents du graphe.
+
+    Transit -> transit : on suit les coins de couloir declares dans
+    _TRANSIT_WAYPOINTS pour eviter les diagonales visuelles.
+    Sinon : centre -> porte_sortie -> porte_entree -> centre.
+    """
+    cur = np.array(POS[node_a], float)
+    nxt = np.array(POS[node_b], float)
+
+    if TYPE[node_a] == "transit" and TYPE[node_b] == "transit":
+        junctions = _TRANSIT_WAYPOINTS.get((node_a, node_b))
+        if junctions:
+            return [cur] + [np.array(pt, float) for pt in junctions] + [nxt]
+        return [cur, nxt]
+
     cdoor = porte(node_a) if TYPE[node_a] != "transit" else cur
     ndoor = porte(node_b) if TYPE[node_b] != "transit" else nxt
     way = [cur]
@@ -268,17 +318,19 @@ def generate_parcours_animation(
             soignant_markers=dyn_markers,
             titre=frame["titre"],
         )
+        ax.title.set_fontsize(12)
+        ax.title.set_fontweight("semibold")
 
         bx, by = frame["px"], frame["py"]
 
         # Badge d'etat sur le patient
         ax.text(
-            bx, by + 5.8,
+            bx, by + 6.5,
             frame["etat_court"],
             ha="center", va="bottom",
-            fontsize=5.5, fontweight="bold", color="white",
+            fontsize=6.5, fontweight="bold", color="white",
             bbox=dict(
-                boxstyle="round,pad=0.15",
+                boxstyle="round,pad=0.18",
                 fc=frame["col"], ec="none", alpha=0.88,
             ),
             zorder=10,
@@ -320,23 +372,27 @@ def generate_parcours_animation(
             mpatches.Patch(fc=_COULEUR_ETAT["SOIN"],         label="Patient : en soin"),
             mpatches.Patch(fc=_COULEUR_ETAT["TERMINE"],      label="Patient : sorti"),
             mlines.Line2D([0], [0], marker="D", color="w",
-                          markerfacecolor=_COL_MED_LIBRE,  markersize=6,
+                          markerfacecolor=_COL_MED_LIBRE,  markersize=8,
                           label="Medecin disponible"),
             mlines.Line2D([0], [0], marker="D", color="w",
-                          markerfacecolor=_COL_MED_ACTIF,  markersize=6,
+                          markerfacecolor=_COL_MED_ACTIF,  markersize=8,
                           label="Medecin actif"),
             mlines.Line2D([0], [0], marker="D", color="w",
-                          markerfacecolor=_COL_PARA_LIBRE, markersize=6,
+                          markerfacecolor=_COL_PARA_LIBRE, markersize=8,
                           label="IDE disponible"),
             mlines.Line2D([0], [0], marker="D", color="w",
-                          markerfacecolor=_COL_PARA_ACTIF, markersize=6,
+                          markerfacecolor=_COL_PARA_ACTIF, markersize=8,
                           label="IDE actif"),
         ]
         ax.legend(
             handles=legend_elts,
             loc="lower left",
-            fontsize=5, framealpha=0.85,
-            ncol=2, borderpad=0.5,
+            fontsize=7, framealpha=0.9,
+            ncol=2, borderpad=0.6,
+            markerscale=1.4,
+            edgecolor="#333",
+            labelspacing=0.5,
+            handlelength=1.8,
         )
 
     # ---- FuncAnimation ---------------------------------------------------
