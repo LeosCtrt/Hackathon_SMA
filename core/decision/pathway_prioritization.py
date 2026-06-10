@@ -132,21 +132,27 @@ def prioritize_pathways(
     for rank, item in enumerate(scored, 1):
         item["rang"] = rank
 
-    # Ajouter le regroupement récurrents
+    # Levier transversal : regroupement récurrents (hors classement de parcours)
+    transversal_levers: List[Dict[str, Any]] = []
     if ipp_metrics and ipp_metrics.get("has_ipp"):
         rec = ipp_metrics["patients_recurrents"]
-        scored.append({
-            "pathway": "recurrent_patient_grouping",
-            "label": "Regroupement patients récurrents",
+        transversal_levers.append({
+            "levier": "recurrent_patient_grouping",
+            "label": "Regroupement patients récurrents (levier transversal)",
+            "description": (
+                "Les patients multi-venues (> 1 consultation sur la période) représentent "
+                "un potentiel de regroupement en HDJ quelle que soit la pathologie. "
+                "Ce levier s'applique à tous les parcours ranked_hdj_pathways."
+            ),
             "volume": rec,
             "pct_total": ipp_metrics.get("pct_recurrents", 0),
-            "score_priorite": 0.62,
-            "ressources_critiques": ["à définir"],
-            "faisabilite": 0.55,
             "valeur_strategique": 0.85,
             "difficulte": 0.65,
             "owners_suggeres": ["Chef de service", "DIM/PMSI", "Cadre HDJ", "DSI/Data"],
-            "rang": len(scored) + 1,
+            "note": (
+                "À activer après validation DIM/PMSI des parcours prioritaires. "
+                "Nécessite un module DSI de détection automatique des récurrences."
+            ),
         })
 
     prioritization: Dict[str, Any] = {
@@ -156,7 +162,9 @@ def prioritize_pathways(
             "valeur stratégique (20%), faisabilité (15%), facilité (10%), coordination (5%)"
         ),
         "total_sejours_reference": total_sejours,
-        "classement": scored,
+        "ranked_hdj_pathways": scored,
+        "transversal_levers": transversal_levers,
+        "classement": scored,  # backward compat
         "note": (
             "Le classement est une aide à la priorisation organisationnelle. "
             "La décision finale appartient aux équipes médicales et à la direction."

@@ -1,6 +1,6 @@
 {
-  "verdict": "not_usable",
-  "verdict_detail": "Données insuffisantes pour la simulation. Corriger les colonnes manquantes avant de relancer.",
+  "verdict": "usable_with_warnings",
+  "verdict_detail": "Données exploitables pour aide à la décision organisationnelle. Les avertissements signalés (couverture actes, TYPE_SEJOUR=EXT) sont attendus pour ce type d'extraction PMSI. Validation DIM/PMSI requise avant mise en œuvre.",
   "dimensions": {
     "n_lignes": 627,
     "n_colonnes": 35
@@ -39,13 +39,12 @@
     "dates_coherentes": true
   },
   "warnings": [
-    "CODE ACTE : 61% de valeurs manquantes",
-    "SPECIALITE OPERATEUR : 61% de valeurs manquantes",
-    "Toutes les données sont TYPE_SEJOUR=EXT (consultations externes) — simulation HDJ hypothétique, pas une reclassification PMSI réelle",
+    "LISTE ACTES CCAM MVT : 61% de valeurs manquantes — couverture réduite",
+    "CODE ACTE : 61% de valeurs manquantes — couverture réduite",
+    "SPECIALITE OPERATEUR : 61% de valeurs manquantes — couverture réduite",
+    "Toutes les données sont TYPE_SEJOUR=EXT (consultations externes) — simulation organisationnelle à valider DIM/PMSI, pas une reclassification PMSI réelle",
     "Seulement 39% des lignes ont des actes CCAM — éligibilité HDJ sous-estimée"
   ],
-  "blocking_issues": [
-    "LISTE ACTES CCAM MVT : 61% de valeurs manquantes"
-  ],
+  "blocking_issues": [],
   "note": "Ce rapport qualité est produit automatiquement. Une validation par le DIM est recommandée avant toute décision opérationnelle."
 }

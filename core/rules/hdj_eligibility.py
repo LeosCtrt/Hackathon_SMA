@@ -34,7 +34,7 @@ Sources :
 
 Limites EXPLICITES :
   - Instruction Gradation DGOS/R1/DSS/1A/2020/52 absente → critères GHS non codés
-  - Données TYPE_SEJOUR=EXT uniquement → simulation hypothétique, pas PMSI réel
+  - Données TYPE_SEJOUR=EXT uniquement → simulation organisationnelle à valider DIM/PMSI
   - Actes CCAM pour initiation pompe/capteur et pied diabétique absents des données
   - Règles médicales absentes des documents disponibles → non codées
 """

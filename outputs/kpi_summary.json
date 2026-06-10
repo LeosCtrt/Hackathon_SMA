@@ -3,7 +3,7 @@
     "source": "HDJ Agent — CHU Guyane",
     "specialite": "Endocrinologie-Diabétologie",
     "scenarios": "A (PMSI garde-fou) + B (réorganisation cible)",
-    "avertissement": "données TYPE_SEJOUR=EXT — simulation hypothétique",
+    "avertissement": "données TYPE_SEJOUR=EXT — simulation organisationnelle à valider DIM/PMSI",
     "horizon_simulation_jours": 5,
     "capacite_max_parallele": 6
   },

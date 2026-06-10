@@ -328,7 +328,7 @@ class CoordinateurAgent:
             ("Actes CCAM pied diabétique absents des données",
              "parcours pied_diabetique non détectable"),
             ("Données TYPE_SEJOUR=EXT uniquement",
-             "simulation hypothétique — pas une reclassification PMSI réelle"),
+             "simulation organisationnelle à valider DIM/PMSI — pas une reclassification réelle"),
             ("Durées de séjour HDJ estimées (non issues de temps réels)",
              "bilan_annuel=60min, rétinographie=90min, test_dyn=180min — à valider"),
         ]

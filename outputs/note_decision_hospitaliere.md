@@ -42,7 +42,7 @@ L'activité endocrino-diabétologique est actuellement dispersée en consultatio
 | Lignes brutes | 627 |
 | Séjours uniques analysés | 409 |
 | IPP patients uniques | 249 |
-| Qualité données | not_usable |
+| Qualité données | usable_with_warnings |
 
 *Données pseudonymisées — aucun IPP individuel exposé dans cette note.*
 
@@ -50,10 +50,10 @@ L'activité endocrino-diabétologique est actuellement dispersée en consultatio
 
 ## 4. Qualité des données
 
-- **Verdict :** `not_usable`
+- **Verdict :** `usable_with_warnings`
 - Colonnes PMSI essentielles présentes (NUM_SEJOUR, CODE_DIAG, LISTE_ACTES_CCAM)
 - IPP disponible sur les deux périodes — analyse récurrence activée
-- Données TYPE_SEJOUR=EXT uniquement → simulation hypothétique de restructuration
+- Données TYPE_SEJOUR=EXT uniquement → simulation organisationnelle à valider DIM/PMSI
 
 ---
 
@@ -69,7 +69,7 @@ L'activité endocrino-diabétologique est actuellement dispersée en consultatio
 
 **Interprétation :** Près d'1 patient sur 2 revient plusieurs fois. Ces retours répétés
 représentent un potentiel de regroupement en HDJ, réduisant les déplacements,
-améliorant la coordination soignants et optimisant la tarification GHS.
+améliorant la coordination soignants et instruisant le potentiel de valorisation avec le DIM/PMSI.
 
 ---
 

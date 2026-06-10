@@ -221,9 +221,16 @@ def simulate_capacity(
 
     simulation: Dict[str, Any] = {
         "analyse": "Simulation capacité HDJ — configurations comparées",
+        "main_bottleneck": "validation_organisationnelle_pmsi",
+        "capacity_message": (
+            "La capacité équipement (rétinographe, fauteuil) n'est pas le goulot principal. "
+            "Le goulot principal est la validation organisationnelle et PMSI des parcours HDJ : "
+            "sans instruction DIM/PMSI, aucun séjour supplémentaire ne peut être facturé "
+            "quelle que soit la capacité matérielle disponible."
+        ),
         "note": (
             "Durées issues du YAML métier (estimation opérationnelle basée sur les durées "
-            "paramétrées). À valider avec l'équipe soignante avant mise en œuvre."
+            "paramétrées, source : hdj_metier.yaml). À valider avec l'équipe soignante."
         ),
         "configurations": results,
         "recommandation": (

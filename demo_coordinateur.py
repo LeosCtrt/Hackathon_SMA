@@ -158,7 +158,7 @@ def print_ipp_section(metrics: dict) -> None:
     print()
     print("  → Les retours multiples d'un même patient (fragmentation du parcours)")
     print("    révèlent un potentiel de regroupement en HDJ : moins de déplacements,")
-    print("    meilleure coordination soignants, tarification GHS journalier optimisée.")
+    print("    meilleure coordination soignants, potentiel de valorisation à instruire avec le DIM/PMSI.")
     print(f"\n{sep}\n")
 
 

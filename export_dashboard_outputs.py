@@ -380,7 +380,7 @@ L'activité endocrino-diabétologique est actuellement dispersée en consultatio
 - **Verdict :** `{verdict}`
 - Colonnes PMSI essentielles présentes (NUM_SEJOUR, CODE_DIAG, LISTE_ACTES_CCAM)
 - IPP disponible sur les deux périodes — analyse récurrence activée
-- Données TYPE_SEJOUR=EXT uniquement → simulation hypothétique de restructuration
+- Données TYPE_SEJOUR=EXT uniquement → simulation organisationnelle à valider DIM/PMSI
 
 ---
 
@@ -396,7 +396,7 @@ L'activité endocrino-diabétologique est actuellement dispersée en consultatio
 
 **Interprétation :** Près d'1 patient sur 2 revient plusieurs fois. Ces retours répétés
 représentent un potentiel de regroupement en HDJ, réduisant les déplacements,
-améliorant la coordination soignants et optimisant la tarification GHS.
+améliorant la coordination soignants et instruisant le potentiel de valorisation avec le DIM/PMSI.
 
 ---
 
@@ -575,7 +575,7 @@ def main() -> None:
             "source": "HDJ Agent — CHU Guyane",
             "specialite": "Endocrinologie-Diabétologie",
             "scenarios": "A (PMSI garde-fou) + B (réorganisation cible)",
-            "avertissement": "données TYPE_SEJOUR=EXT — simulation hypothétique",
+            "avertissement": "données TYPE_SEJOUR=EXT — simulation organisationnelle à valider DIM/PMSI",
             "horizon_simulation_jours": DEFAULT_N_DAYS,
             "capacite_max_parallele": DEFAULT_MAX_PARALLEL,
         },

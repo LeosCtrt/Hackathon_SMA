@@ -177,7 +177,7 @@ def reconstruct_patient_pathways(
             f"{pct_rec:.1f}% des patients ont plusieurs venues sur la période analysée. "
             "Ce signal de fragmentation représente un potentiel de structuration en HDJ "
             "pour réduire les passages multiples, améliorer la coordination soignants "
-            "et optimiser la tarification GHS journalière."
+            "et instruire le potentiel de valorisation avec le DIM/PMSI."
         ),
     }
 

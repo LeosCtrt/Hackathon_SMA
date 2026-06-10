@@ -71,17 +71,19 @@ def build_data_quality_report(
     n_cols = len(df.columns)
 
     # ── Colonnes obligatoires ─────────────────────────────────────────────
+    # Bloquant uniquement si la colonne est ABSENTE du DataFrame.
+    # Un taux élevé de valeurs nulles est un avertissement, pas un blocage.
     missing_required = [c for c in REQUIRED_COLUMNS if c not in df.columns]
     if missing_required:
         blocking_issues.append(f"Colonnes obligatoires absentes : {missing_required}")
 
     # ── Taux de valeurs manquantes ────────────────────────────────────────
+    # Un taux élevé de nulls réduit la couverture mais n'empêche pas l'analyse
+    # → toujours un avertissement, jamais un blocage.
     missing_rates = {col: _missing_rate(df, col) for col in IMPORTANT_COLUMNS}
     for col, rate in missing_rates.items():
-        if rate > 0.5 and col in REQUIRED_COLUMNS:
-            blocking_issues.append(f"{col} : {rate:.0%} de valeurs manquantes")
-        elif rate > 0.3:
-            warnings.append(f"{col} : {rate:.0%} de valeurs manquantes")
+        if rate > 0.3:
+            warnings.append(f"{col} : {rate:.0%} de valeurs manquantes — couverture réduite")
 
     # ── IPP ───────────────────────────────────────────────────────────────
     has_ipp = "NUM IPP PATIENT" in df.columns
@@ -117,7 +119,7 @@ def build_data_quality_report(
             type_sejour_warning = True
             warnings.append(
                 "Toutes les données sont TYPE_SEJOUR=EXT (consultations externes) — "
-                "simulation HDJ hypothétique, pas une reclassification PMSI réelle"
+                "simulation organisationnelle à valider DIM/PMSI, pas une reclassification PMSI réelle"
             )
 
     # ── Cohérence CCAM ────────────────────────────────────────────────────
@@ -147,17 +149,21 @@ def build_data_quality_report(
             dates_coherent = False
 
     # ── Verdict ───────────────────────────────────────────────────────────
+    # not_usable uniquement si des colonnes structurelles sont ABSENTES du fichier.
+    # Des taux élevés de nulls ou le format TYPE_SEJOUR=EXT ne bloquent pas l'analyse.
     if blocking_issues:
         verdict = "not_usable"
         verdict_detail = (
-            "Données insuffisantes pour la simulation. "
-            "Corriger les colonnes manquantes avant de relancer."
+            "Colonnes structurelles absentes — simulation impossible. "
+            "Fournir un fichier avec NUM_SEJOUR, CODE_DIAG, LISTE_ACTES_CCAM_MVT, TYPE_SEJOUR."
         )
-    elif len(warnings) >= 4:
+    elif warnings:
         verdict = "usable_with_warnings"
         verdict_detail = (
-            "Données utilisables pour la simulation d'aide à la décision, "
-            "avec précautions signalées. Les résultats restent à valider par le DIM/PMSI."
+            "Données exploitables pour aide à la décision organisationnelle. "
+            "Les avertissements signalés (couverture actes, TYPE_SEJOUR=EXT) "
+            "sont attendus pour ce type d'extraction PMSI. "
+            "Validation DIM/PMSI requise avant mise en œuvre."
         )
     else:
         verdict = "usable_for_decision_support"

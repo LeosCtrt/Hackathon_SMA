@@ -105,6 +105,30 @@ if page == "Synthèse exécutive":
     _metric(c3, "% récurrents", rec.get("pct_recurrents", "—"), "%")
     _metric(c4, "Venues max / patient", rec.get("venues_max", "—"))
 
+    st.markdown("---")
+
+    st.subheader("Décision recommandée")
+    st.markdown("""
+<div style='background:#d4edda;border-left:5px solid #28a745;padding:14px 18px;border-radius:6px;margin-bottom:12px'>
+<b>Démarrer par un pilote HDJ "Bilan annuel diabète"</b><br>
+Volume le plus large identifié dans les données · Faisabilité opérationnelle maximale ·
+Validation DIM/PMSI réalisable en 4–6 semaines · Aucun investissement équipement requis.<br>
+<i>Prochaine étape : présenter ce tableau de bord au comité de direction médicale et mandater le DIM pour validation PMSI des cas candidats.</i>
+</div>
+""", unsafe_allow_html=True)
+
+    st.subheader("Ce que l'outil permet à l'hôpital")
+    st.markdown("""
+- **Quantifier le potentiel HDJ** : identifier les séjours ambulatoires restructurables parmi les consultations EXT existantes
+- **Prioriser les pathways** : score multicritère basé sur le volume réel, la faisabilité et la valeur stratégique
+- **Simuler la capacité** : comparer 6 configurations ressources (rétinographe, fauteuil, horizon)
+- **Détecter la fragmentation** : cartographier les patients multi-venues pour réduire les déplacements inutiles
+- **Outiller la gouvernance** : note de décision téléchargeable, estimation médico-économique à 3 niveaux, recommandations prêtes pour comité médical
+
+> *Prototype d'aide à la décision organisationnelle — validation DIM/PMSI et gouvernance hospitalière requises avant mise en œuvre.*
+""")
+
+    st.markdown("---")
     st.subheader("Occupation ressources critiques")
     df_res = pd.DataFrame({
         "Ressource": ["Rétinographe", "Fauteuil médicalisé", "Rétinographe", "Fauteuil médicalisé"],
@@ -240,6 +264,16 @@ elif page == "Capacité / Saturation":
         st.stop()
 
     st.info(cap.get("recommandation", ""))
+
+    bottleneck_msg = cap.get("capacity_message", "")
+    if bottleneck_msg:
+        st.markdown(f"""
+<div style='background:#fff3cd;border-left:5px solid #fd7e14;padding:14px 18px;border-radius:6px;margin:8px 0'>
+<b>Goulot principal : validation organisationnelle / PMSI</b><br>
+{bottleneck_msg}
+</div>
+""", unsafe_allow_html=True)
+
     st.caption(cap.get("note", ""))
 
     rows = []
@@ -272,6 +306,8 @@ elif page == "Priorisation HDJ":
 
     st.caption(prior.get("methodologie", ""))
 
+    st.subheader("A — Parcours HDJ prioritaires")
+    pathways = prior.get("ranked_hdj_pathways", prior.get("classement", []))
     df_p = pd.DataFrame([
         {
             "Rang": item["rang"],
@@ -282,10 +318,25 @@ elif page == "Priorisation HDJ":
             "Valeur strat.": item["valeur_strategique"],
             "Owners": ", ".join(item.get("owners_suggeres", [])),
         }
-        for item in prior.get("classement", [])
+        for item in pathways
     ])
     st.dataframe(df_p.style.background_gradient(subset=["Score"], cmap="Greens"),
                  use_container_width=True)
+
+    levers = prior.get("transversal_levers", [])
+    if levers:
+        st.subheader("B — Levier transversal")
+        for lev in levers:
+            st.markdown(f"""
+<div style='background:#e8f4f8;border-left:5px solid #17a2b8;padding:14px 18px;border-radius:6px;margin-bottom:10px'>
+<b>{lev['label']}</b><br>
+{lev.get('description', '')}<br>
+<b>Volume :</b> {lev['volume']} patients ({lev.get('pct_total', 0):.1f}% du total) ·
+<b>Valeur stratégique :</b> {lev['valeur_strategique']}<br>
+<b>Owners :</b> {', '.join(lev.get('owners_suggeres', []))}<br>
+<i>{lev.get('note', '')}</i>
+</div>
+""", unsafe_allow_html=True)
 
     if recs:
         st.subheader("Recommandations décisionnelles (Top 3)")
