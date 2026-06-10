@@ -38,7 +38,7 @@ L'outil identifie un **potentiel organisationnel** à instruire et valider avec 
 - **Estimation médico-économique indicative** : potentiel de valorisation à valider avec DIM/PMSI.
 - **Note de décision téléchargeable** : synthèse de la simulation, prête pour présentation.
 - **Interface Streamlit complète** : 11 pages, usage direct depuis l'interface sans ligne de commande.
-- **Interface Lovable** : restitution exécutive pour jury / décideurs.
+- **Interface Lovable** : restitution exécutive pour décideurs hospitaliers.
 - **Modélisation visuelle du parcours patient** : animation des déplacements dans l'HDJ.
 
 ---
@@ -50,7 +50,7 @@ L'outil identifie un **potentiel organisationnel** à instruire et valider avec 
 **URL :** [https://hdj-equipe5.lovable.app](https://hdj-equipe5.lovable.app)
 
 Vitrine exécutive du projet : vision produit, grands scénarios organisationnels, impacts et messages clés.
-Conçue pour la restitution au jury, aux décideurs et à la direction hospitalière.
+Support de restitution exécutive pour la direction hospitalière, la gouvernance et les décideurs.
 
 ### Interface Streamlit — moteur détaillé
 
