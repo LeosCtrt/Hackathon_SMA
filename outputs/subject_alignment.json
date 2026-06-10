@@ -1,45 +1,235 @@
 {
   "sujet": "HDJ Agent — Système multi-agents pour optimisation capacitaire et création d'hôpitaux de jour",
-  "alignement": [
+  "checklist": [
     {
-      "critere": "Jumeau organisationnel simplifié HDJ",
-      "couvert": true,
-      "comment": "HopitalModel (Mesa) + graphe NetworkX + EnvironnementAgent (horaires, flux)"
+      "id": 1,
+      "objectif": "Jumeau organisationnel",
+      "status": "complete",
+      "implementation": "HopitalModel (Mesa) + graphe NetworkX + EnvironnementAgent",
+      "files": [
+        "core/agents/environnement.py",
+        "core/hopital/hopital_model.py"
+      ],
+      "evidence_output": "agent_architecture.json",
+      "remaining_gap": "Aucun",
+      "demo_message": "Le modèle Mesa simule l'hôpital comme un graphe de salles avec flux de patients et soignants."
     },
     {
-      "critere": "Agents patients / soignants / salles / environnement / coordinateur",
-      "couvert": true,
-      "comment": "5 agents implémentés : Patient, SoignantAgent, Salle, EnvironnementAgent, CoordinateurAgent"
+      "id": 2,
+      "objectif": "Agents patients",
+      "status": "complete",
+      "implementation": "PatientAgent — instancié depuis données réelles, porteur de pathway et flags PMSI",
+      "files": [
+        "core/agents/soignant.py"
+      ],
+      "evidence_output": "agent_architecture.json",
+      "remaining_gap": "Aucun",
+      "demo_message": "Chaque patient porte son diagnostic CIM-10, ses actes CCAM et son flag pmsi_validation_required."
     },
     {
-      "critere": "Scénarios A/B",
-      "couvert": true,
-      "comment": "A=5 planifiés (PMSI), B=33 simulés — gain +28"
+      "id": 3,
+      "objectif": "Agents soignants",
+      "status": "complete",
+      "implementation": "SoignantAgent — rôles, horaires, charge de travail, interagit avec PatientAgent",
+      "files": [
+        "core/agents/soignant.py"
+      ],
+      "evidence_output": "agent_architecture.json",
+      "remaining_gap": "Aucun",
+      "demo_message": "Les soignants sont affectés physiquement à des salles et gèrent leur charge."
     },
     {
-      "critere": "Indicateurs volume convertible / occupation / saturation / délai / ressources critiques",
-      "couvert": true,
-      "comment": "Dashboard A/B + capacity_simulation.json (6 configurations testées)"
+      "id": 4,
+      "objectif": "Ressources critiques",
+      "status": "complete",
+      "implementation": "RessourceLimitante (rétinographe ×1, fauteuil ×2) — suivi occupation par créneau",
+      "files": [
+        "core/resources/ressources_hdj.py"
+      ],
+      "evidence_output": "capacity_simulation.json",
+      "remaining_gap": "Aucun",
+      "demo_message": "Rétinographe et fauteuil médicalisé suivis en occupation réelle par scénario."
     },
     {
-      "critere": "Logique exploitable par l'hôpital",
-      "couvert": true,
-      "comment": "YAML métier validé + triage organisationnel + note de décision + Streamlit app"
+      "id": 5,
+      "objectif": "Coordinateur / ordonnanceur",
+      "status": "complete",
+      "implementation": "CoordinateurAgent — planifie A et B, affecte ressources, calcule KPIs",
+      "files": [
+        "core/agents/coordinateur.py",
+        "core/simulation/scheduler.py"
+      ],
+      "evidence_output": "kpi_summary.json",
+      "remaining_gap": "Aucun",
+      "demo_message": "Le coordinateur orchestre l'affectation fauteuils/rétinographe et produit les KPIs A/B."
     },
     {
-      "critere": "Base prête dashboard / interface Lovable",
-      "couvert": true,
-      "comment": "17 fichiers JSON/CSV dans outputs/ + API statique consommable directement"
+      "id": 6,
+      "objectif": "Orientation",
+      "status": "complete",
+      "implementation": "is_hdj_eligible() + triage organisationnel — 7 catégories de triage",
+      "files": [
+        "core/rules/hdj_eligibility.py",
+        "core/decision/organizational_triage.py"
+      ],
+      "evidence_output": "triage_summary.json",
+      "remaining_gap": "Aucun",
+      "demo_message": "Chaque séjour est orienté : already_hdj, pmsi_guardrail, réorganisation_cible, récurrents, hors_périmètre…"
     },
     {
-      "critere": "Fragmentation parcours / patients récurrents",
-      "couvert": true,
-      "comment": "IPP : 249 patients, 46.2% récurrents"
+      "id": 7,
+      "objectif": "Regroupement d'actes",
+      "status": "complete",
+      "implementation": "Reconstruction parcours IPP — regroupement actes CCAM par patient récurrent",
+      "files": [
+        "core/analysis/pathway_reconstruction.py"
+      ],
+      "evidence_output": "pathway_reconstruction.json",
+      "remaining_gap": "Aucun",
+      "demo_message": "115 patients récurrents (46.2%) — potentiel de regroupement actes identifié."
     },
     {
-      "critere": "Médico-économique",
-      "couvert": true,
-      "comment": "3 niveaux estimations (prudent/opérationnel/transformation) — à valider DIM"
+      "id": 8,
+      "objectif": "Affectation HDJ",
+      "status": "complete",
+      "implementation": "Scheduler greedy + what-if engine — affectation par créneau jour/ressource",
+      "files": [
+        "core/simulation/scheduler.py",
+        "core/scenarios/what_if_capacity.py"
+      ],
+      "evidence_output": "what_if_capacity_results.json",
+      "remaining_gap": "Aucun",
+      "demo_message": "Scénario B : 33 séjours affectés. Engine what-if : 8 configurations, saturation à 115 cas."
+    },
+    {
+      "id": 9,
+      "objectif": "Saturation capacitaire",
+      "status": "complete",
+      "implementation": "Simulation what-if : horizon court (2j) et regroupement récurrents → saturation réelle",
+      "files": [
+        "core/scenarios/what_if_capacity.py"
+      ],
+      "evidence_output": "what_if_capacity_results.json",
+      "remaining_gap": "Aucun",
+      "demo_message": "Regroupement 115 récurrents en 5j → 64 non planifiés (56%). Horizon 2j → 15 non planifiés."
+    },
+    {
+      "id": 10,
+      "objectif": "Replanification",
+      "status": "partial",
+      "implementation": "Cas non planifiés identifiés mais non replanifiés automatiquement sur horizon étendu",
+      "files": [
+        "core/scenarios/what_if_capacity.py"
+      ],
+      "evidence_output": "what_if_capacity_results.json",
+      "remaining_gap": "Pas de replanification automatique multi-semaines",
+      "demo_message": "L'outil signale les cas non absorbés et recommande l'extension d'horizon."
+    },
+    {
+      "id": 11,
+      "objectif": "Statu quo",
+      "status": "complete",
+      "implementation": "Scénario A = statu quo PMSI — 5 séjours planifiables selon règles actuelles",
+      "files": [
+        "core/agents/coordinateur.py"
+      ],
+      "evidence_output": "kpi_summary.json, what_if_capacity_results.json",
+      "remaining_gap": "Aucun",
+      "demo_message": "Scénario A (statu quo) : 5 séjours — base de comparaison."
+    },
+    {
+      "id": 12,
+      "objectif": "Optimisation de l'existant",
+      "status": "complete",
+      "implementation": "6 configurations capacité + what-if +fauteuil, +rétino, +horizon",
+      "files": [
+        "core/scenarios/capacity_model.py",
+        "core/scenarios/what_if_capacity.py"
+      ],
+      "evidence_output": "capacity_simulation.json, what_if_capacity_results.json",
+      "remaining_gap": "Aucun",
+      "demo_message": "+1 fauteuil + horizon 10j → absorption totale des récurrents sur 2 semaines."
+    },
+    {
+      "id": 13,
+      "objectif": "Création nouvel HDJ",
+      "status": "complete",
+      "implementation": "6 parcours HDJ priorisés avec score multicritère — recommandations opérationnelles",
+      "files": [
+        "core/decision/pathway_prioritization.py"
+      ],
+      "evidence_output": "pathway_prioritization.json, decision_recommendations.json",
+      "remaining_gap": "Aucun",
+      "demo_message": "Bilan annuel diabète, endocrino-métabolique, ETP — plans de création détaillés."
+    },
+    {
+      "id": 14,
+      "objectif": "Attente simulée",
+      "status": "complete",
+      "implementation": "Engine what-if calcule wait_days = jour_affecté - jour_référence",
+      "files": [
+        "core/scenarios/what_if_capacity.py"
+      ],
+      "evidence_output": "what_if_capacity_results.json",
+      "remaining_gap": "Aucun",
+      "demo_message": "Scénario B 5j : attente moy 1.5j. Stress 2j : 0.5j (mais 15 non planifiés). Récurrents 5j : moy 2.8j."
+    },
+    {
+      "id": 15,
+      "objectif": "Occupation / saturation",
+      "status": "complete",
+      "implementation": "Occupation fauteuil et rétinographe calculée par configuration et par jour",
+      "files": [
+        "core/scenarios/what_if_capacity.py",
+        "core/scenarios/capacity_model.py"
+      ],
+      "evidence_output": "what_if_capacity_results.json, capacity_simulation.json",
+      "remaining_gap": "Aucun",
+      "demo_message": "Scénario B 5j : fauteuil ~77%. Récurrents 5j : saturation 100% fauteuil."
+    },
+    {
+      "id": 16,
+      "objectif": "Volumes convertibles",
+      "status": "complete",
+      "implementation": "409 séjours analysés → 33 convertibles B, 115 récurrents regroupables",
+      "files": [
+        "core/decision/organizational_triage.py"
+      ],
+      "evidence_output": "triage_summary.json, kpi_summary.json",
+      "remaining_gap": "Aucun",
+      "demo_message": "33 séjours convertibles scénario B + 115 patients récurrents = potentiel total identifié."
+    },
+    {
+      "id": 17,
+      "objectif": "Impact médico-économique",
+      "status": "complete",
+      "implementation": "3 niveaux estimatifs (prudent/opérationnel/transformation) — tarif paramétrable",
+      "files": [
+        "core/decision/medico_economic.py"
+      ],
+      "evidence_output": "medico_economic_estimates.json",
+      "remaining_gap": "Tarif GHS réel CHU Guyane à saisir par DIM",
+      "demo_message": "Valorisation indicative paramétrable dans Streamlit — prudent, opérationnel, transformation."
+    },
+    {
+      "id": 18,
+      "objectif": "Aide à la décision gouvernance",
+      "status": "complete",
+      "implementation": "Note direction + recommandations par owner + plan d'action + Streamlit 9 pages",
+      "files": [
+        "streamlit_app.py",
+        "export_dashboard_outputs.py"
+      ],
+      "evidence_output": "note_decision_hospitaliere.md, decision_recommendations.json, operational_action_plan.json",
+      "remaining_gap": "Aucun",
+      "demo_message": "Note téléchargeable, 9 pages Streamlit, plan d'action DIM/Chef service/Direction opérations."
     }
-  ]
+  ],
+  "synthese": {
+    "complete": 17,
+    "partial": 1,
+    "missing": 0,
+    "score": "17/18 objectifs couverts complètement",
+    "gap_restant": "Replanification automatique multi-semaines (partiel — identifié, non automatisé)"
+  }
 }

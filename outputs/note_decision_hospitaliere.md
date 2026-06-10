@@ -1,40 +1,37 @@
 # Note de décision hospitalière — HDJ Agent
-## CHU Guyane — Endocrinologie-Diabétologie
+## CHU Guyane · Endocrinologie-Diabétologie
 
-**Date d'analyse :** 09 juin 2026
-**Outil :** HDJ Agent — Système multi-agents d'aide à la décision capacitaire
-**Statut :** Prototype opérationnel d'aide à la décision — validation médicale et PMSI requise avant mise en œuvre
-
----
-
-## 1. Résumé exécutif
-
-L'analyse de l'activité endocrino-diabétologique du CHU Guyane (période 2020–2026) révèle
-**46.2% de patients récurrents** (115/249 patients uniques), avec en moyenne
-2.5 venues par patient et un maximum de 59 venues pour un même patient.
-
-La simulation multi-agents identifie :
-- **5 séjours planifiables** dans un scénario PMSI conservateur (scénario A)
-- **33 séjours simulables** dans un scénario de réorganisation cible (scénario B)
-- **Gain potentiel : +28 séjours** supplémentaires structurables en HDJ
+**Date d'analyse :** 09 juin 2026 · **Version :** 2.0
+**Outil :** HDJ Agent — Système multi-agents d'aide à la décision capacitaire et organisationnelle
+**Statut :** Prototype d'aide à la décision — validation médicale, DIM/PMSI et gouvernance hospitalière requises
 
 ---
 
-## 2. Problème identifié
+## 1. Résumé exécutif (5 lignes)
 
-L'activité endocrino-diabétologique est actuellement dispersée en consultations externes
-(TYPE_SEJOUR=EXT). Les données montrent :
-
-- **Fragmentation des parcours** : 493 lignes de données concernent des patients
-  déjà venus plusieurs fois, sans structure HDJ pour les regrouper
-- **Ressources critiques sous-utilisées** : rétinographe et fauteuil médicalisé
-  mobilisés au cas par cas, sans planification coordonnée
-- **Coordination insuffisante** : bilans annuels, ETP, tests dynamiques réalisés
-  lors de consultations séparées au lieu d'une journée structurée
+L'activité endocrino-diabétologique du CHU Guyane (2020–2026, 409 séjours, 249 patients identifiés) révèle **46.2% de patients récurrents** avec en moyenne 2.5 venues par patient. L'analyse multi-agents identifie **5 séjours PMSI-validables immédiatement** (scénario prudent) et **33 séjours structurables** après validation DIM (scénario réorganisation), soit un gain potentiel de +28. La simulation what-if confirme que la capacité matérielle actuelle (fauteuil ×2, rétinographe ×1) absorbe ce volume en 5 jours — **le goulot est exclusivement organisationnel et réglementaire**. L'action immédiate recommandée est de mandater le DIM pour valider les cas scénario A et lancer un pilote HDJ bilan annuel diabète.
 
 ---
 
-## 3. Données analysées
+## 2. Décision recommandée
+
+> **Lancer un pilote HDJ Bilan annuel diabète, puis instruire l'élargissement endocrino-métabolique avec le DIM/PMSI.**
+
+**Pourquoi ce parcours en priorité :**
+- Volume le plus large identifié (12 cas scénario B)
+- Faisabilité opérationnelle maximale (85%) — actes CCAM documentés, durée 60 min
+- Aucun investissement matériel requis
+- Validation DIM estimable en 4–6 semaines
+
+**Prochaines étapes immédiates :**
+1. Présenter ce tableau de bord au CME / COPIL HDJ
+2. Mandater le DIM pour croiser les NUM_SEJOUR scénario A avec la facturation réelle
+3. Définir le protocole HDJ bilan annuel avec le chef de service
+4. Paramétrer le tarif GHS réel CHU Guyane dans l'outil
+
+---
+
+## 3. Données et qualité
 
 | Donnée | Valeur |
 |--------|--------|
@@ -42,22 +39,19 @@ L'activité endocrino-diabétologique est actuellement dispersée en consultatio
 | Lignes brutes | 627 |
 | Séjours uniques analysés | 409 |
 | IPP patients uniques | 249 |
-| Qualité données | usable_with_warnings |
+| Patients récurrents | 115 (46.2%) |
+| Qualité données | **usable_with_warnings** |
 
-*Données pseudonymisées — aucun IPP individuel exposé dans cette note.*
-
----
-
-## 4. Qualité des données
-
-- **Verdict :** `usable_with_warnings`
 - Colonnes PMSI essentielles présentes (NUM_SEJOUR, CODE_DIAG, LISTE_ACTES_CCAM)
-- IPP disponible sur les deux périodes — analyse récurrence activée
-- Données TYPE_SEJOUR=EXT uniquement → simulation organisationnelle à valider DIM/PMSI
+- IPP disponible sur deux périodes — analyse récurrence activée
+- Données TYPE_SEJOUR=EXT → simulation organisationnelle à valider DIM/PMSI
+- Couverture CCAM partielle (~39%) → les volumes sont volontairement sous-estimés
+
+*Données pseudonymisées — aucun IPP individuel exposé.*
 
 ---
 
-## 5. Fragmentation observée
+## 4. Fragmentation observée
 
 | Indicateur | Valeur |
 |-----------|--------|
@@ -67,120 +61,101 @@ L'activité endocrino-diabétologique est actuellement dispersée en consultatio
 | Maximum venues / patient | 59 |
 | Lignes issues de patients récurrents | 493 |
 
-**Interprétation :** Près d'1 patient sur 2 revient plusieurs fois. Ces retours répétés
-représentent un potentiel de regroupement en HDJ, réduisant les déplacements,
-améliorant la coordination soignants et instruisant le potentiel de valorisation avec le DIM/PMSI.
+Près d'1 patient sur 2 revient plusieurs fois. Ces retours fragmentés représentent le principal levier de regroupement HDJ.
 
 ---
 
-## 6. Architecture multi-agents
+## 5. Scénarios comparés
 
-Le système HDJ Agent simule 5 agents Mesa interconnectés :
+| Scénario | Volume | Statut |
+|----------|--------|--------|
+| Prudent — scénario A | 5 séjours | PMSI-validable immédiatement |
+| Réorganisation cible — B | 33 séjours | +28 après validation DIM |
+| Regroupement récurrents | 115 patients | Potentiel transformation, protocoles à définir |
 
-1. **Patient Agent** — parcours physique salle à salle
-2. **Soignant Agent** — disponibilité et durée d'actes (paramètres YAML)
-3. **Salle Agent** — capacité et occupation
-4. **Environnement Agent** — horaires, retards, contraintes globales
-5. **Coordinateur Agent** — triage organisationnel + ordonnancement scénarios A/B
-
-Les règles métier (codes CCAM, CIM-10, durées, pathways) sont centralisées dans
-`core/config/hdj_metier.yaml` — source unique validée par l'équipe médicale.
+**Architecture multi-agents :** 5 agents Mesa (Patient, Soignant, Salle, Environnement, Coordinateur) + graphe NetworkX + ordonnancement greedy. Règles CCAM/CIM-10/durées centralisées dans `hdj_metier.yaml`.
 
 ---
 
-## 7. Scénarios testés
+## 6. Résultats what-if capacité
 
-### Scénario A — Garde-fou PMSI (conservateur)
-- **5 séjours planifiés** avec référence PMSI solide
-- Risque réglementaire minimal
-- Applicable immédiatement après validation DIM
+| Configuration | Planifiés | Non planifiés | Attente moy. | Fauteuil occ. | Goulot |
+|--------------|-----------|---------------|-------------|--------------|--------|
+| B — 5 jours (baseline) | 33 | 0 | 1.0 j | 73% | Validation organisationnelle / PMSI |
+| B — stress 2 jours | 22 | 11 | 0.4 j | 96% | Horizon de planification trop court |
+| B — horizon 10 jours | 33 | 0 | 1.0 j | 37% | Validation organisationnelle / PMSI |
+| Récurrents — 5 jours | 56 | 59 | 1.9 j | 98% | Fauteuil médicalisé |
+| Récurrents — 10 jours | 96 | 19 | 4.0 j | 99% | Fauteuil médicalisé |
+| Récurrents — 10j +1 fauteuil | 115 | 0 | 3.2 j | 82% | Validation organisationnelle / PMSI |
 
-### Scénario B — Réorganisation cible
-- **33 séjours simulés** (candidats organisationnels)
-- **+28 séjours** supplémentaires vs scénario A
-- Validation Instruction Gradation DGOS requise
-
-### Scénario Récurrence patients
-- **115 patients** avec multiple venues regroupables
-- Potentiel de transformation ambulatoire fort
+**Lecture :** Sur 33 cas B, la capacité absorbe tout en 5 jours. La saturation apparaît avec les 115 patients récurrents — résorbée avec 10 jours d'horizon et +1 fauteuil.
 
 ---
 
-## 8. Résultats opérationnels
+## 7. Priorités HDJ recommandées
 
-| Métrique | Scénario A | Scénario B |
-|---------|-----------|-----------|
-| Séjours planifiés/simulés | 5 | 33 |
-| Gain vs référence | — | +28 |
-| Rétinographe occupation | 3.3% | 3.3% |
-| Fauteuil occupation | 0.0% | 10.0% |
-| Délai attente moyen | 0.0 j | 0.0 j |
-
----
-
-## 9. Priorités HDJ recommandées
-
-1. **Bilan annuel diabète** — fort volume, faible ressource critique, faisabilité élevée
-2. **Bilan endocrino-métabolique** — coordination multi-soignants à structurer
-3. **ETP diabète/obésité** — valeur patient élevée, groupe de travail à constituer
-4. **Regroupement patients récurrents** — impact fragmentation fort, protocole à définir
-5. **Dépistage rétinopathie** — volume faible mais ressource critique (rétinographe ×1)
+| Rang | Parcours | Volume | Faisabilité | Prochaine action |
+|------|----------|--------|-------------|-----------------|
+| 1 | Bilan annuel diabète | 12 cas B | 85% | Pilote immédiat |
+| 2 | Bilan endocrino-métabolique | 9 cas B | 70% | Après validation scénario A |
+| 3 | ETP diabète / obésité | 4 cas B | 75% | Groupe de travail |
+| 4 | Dépistage rétinopathie | 1 cas B | 80% | Couplé au bilan annuel |
+| T | Regroupement récurrents | 115 patients | 55% | Levier transversal post-validation |
 
 ---
 
-## 10. Estimation médico-économique opérationnelle
+## 8. Impact médico-économique (paramètre indicatif : 420 €/journée)
 
-*Paramètre de référence : forfait journalier HDJ ~420€ — à valider avec DIM/PMSI CHU Guyane.*
+*Ce tarif est paramétrable — à remplacer par le GHS HDJ validé DIM/PMSI CHU Guyane.*
 
-| Niveau | Volume | Valorisation estimée | Statut |
-|--------|--------|---------------------|--------|
-| Prudent (scénario A) | 5 journées | ~2,100€ | À valider DIM |
-| Opérationnel (scénario B) | 33 journées | ~13,860€ | Validation PMSI requise |
-| Transformation (récurrents) | 115 patients | À calculer | Protocoles à définir |
+| Niveau | Volume | Valorisation indicative | Statut |
+|--------|--------|------------------------|--------|
+| Prudent (A) | 5 journées | ~2,100 € | À valider DIM |
+| Opérationnel (B) | 33 journées | ~13,860 € | Validation PMSI requise |
+| Transformation | 115 patients | À calculer | Protocoles à définir |
 
-**Valeur non financière :** moins de déplacements patients, meilleure coordination,
-libération créneaux consultation, amélioration expérience chroniques.
+**Valeur non financière :** réduction des déplacements, meilleure coordination, libération créneaux, amélioration expérience patient chronique.
 
----
-
-## 11. Risques et validations nécessaires
-
-| Risque | Action requise | Owner |
-|--------|---------------|-------|
-| Validation PMSI cas B | Instruction Gradation DGOS | DIM/PMSI |
-| Actes CCAM manquants | Vérification données source | DIM |
-| Durées estimées | Chronométrage réel | Cadre HDJ |
-| Type séjour EXT → HDJ | Protocole de reclassification | DIM + Chef service |
-| Ressources soignants | Plan de charge | Direction opérations |
+*Ces montants servent à prioriser l'instruction DIM/PMSI, pas à facturer directement.*
 
 ---
 
-## 12. Plan de passage à l'échelle
+## 9. Plan d'action par owner
 
-**Phase 1 (0–3 mois) :** Validation DIM du scénario A, pilote bilan annuel diabète
-**Phase 2 (3–9 mois) :** Extension scénario B après validation, protocoles récurrents
-**Phase 3 (9–18 mois) :** Déploiement complet, interface temps réel, apprentissage
+| Action | Owner | Priorité | Délai |
+|--------|-------|----------|-------|
+| Valider cas scénario A | DIM/PMSI | 1 — Immédiat | 0–4 semaines |
+| Lancer pilote bilan annuel diabète | Chef de service + Cadre HDJ | 1 — Immédiat | 4–8 semaines |
+| Paramétrer tarif GHS réel | DIM/PMSI | 1 — Immédiat | 1–2 semaines |
+| Présenter CME / COPIL HDJ | Direction opérations | 1 — Immédiat | 1–2 semaines |
+| Instruire validation 33 cas B | DIM/PMSI | 2 — Court terme | 2–3 mois |
+| Constituer groupe travail récurrents | Cadre HDJ + Chef de service | 2 — Court terme | 3–6 mois |
+| Module DSI détection récurrences | DSI/Data | 3 — Moyen terme | 6–12 mois |
+| Déploiement intranet Streamlit | DSI/Data | 3 — Moyen terme | 6–9 mois |
 
 ---
 
-## 13. Commandes pour reproduire l'analyse
+## 10. Limites réglementaires et PMSI
+
+- **TYPE_SEJOUR=EXT** : toutes les données sources sont des consultations externes — aucun GHS HDJ n'est codé dans les données analysées
+- **Instruction Gradation DGOS/R1/DSS/1A/2020/52** : règles GHS sans nuitée non implémentées automatiquement → chaque cas B porte le flag `pmsi_validation_required=True`
+- **Durées estimées** : issues du YAML métier — chronométrage réel requis avant déploiement
+- **Couverture CCAM partielle** : 39% des lignes ont des actes renseignés → sous-estimation volontaire
+- **Cet outil n'est pas un logiciel médical certifié** — aide à la décision organisationnelle uniquement
+
+---
+
+## 11. Commandes de reproduction
 
 ```bash
-# Installation
-pip install -r requirements.txt
-
-# Analyse complète
-python demo_coordinateur.py
-
-# Export outputs complets
-python export_dashboard_outputs.py
-
-# Interface hospitalière interactive
-streamlit run streamlit_app.py
+pip install -r requirements.txt          # Installation
+python demo_coordinateur.py              # Simulation A/B + IPP
+python export_dashboard_outputs.py       # Génération 24 outputs
+python make_demo_package.py              # Package jury
+streamlit run streamlit_app.py           # Interface interactive
 ```
 
 ---
 
-*Ce document est généré automatiquement par HDJ Agent v1.0.*
-*Il constitue un outil d'aide à la décision organisationnelle et capacitaire.*
-*Toute décision médicale, PMSI ou réglementaire reste sous la responsabilité des équipes compétentes.*
+*Généré automatiquement par HDJ Agent v2.0 — CHU Guyane Endocrino-Diabétologie.*
+*Outil d'aide à la décision organisationnelle. Validation DIM/PMSI, médicale et gouvernance requises.*
