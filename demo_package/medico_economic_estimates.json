@@ -2,7 +2,7 @@
   "analyse": "Estimation médico-économique HDJ — CHU Guyane Endocrino-Diabétologie",
   "avertissement": "Ces estimations sont à valider avec le DIM/PMSI avant toute utilisation financière officielle. Il ne s'agit pas d'une projection de recettes certifiée.",
   "parametres": {
-    "forfait_hdj_reference_euros": 420.0,
+    "forfait_hdj_reference_euros": 600.0,
     "source_forfait": "Paramètre de référence — à adapter au GHS réel CHU Guyane",
     "durees_yaml": {
       "duree_retinographie_min": 90,
@@ -20,9 +20,9 @@
       "label": "Niveau 1 — Prudent (PMSI garde-fou)",
       "description": "Seulement les séjours avec référence PMSI solide (scénario A). Approche conservatrice, risque réglementaire minimal.",
       "volume_concerne": 5,
-      "hypothese": "Forfait journalier HDJ = 420.0€ (à valider DIM)",
+      "hypothese": "Forfait journalier HDJ = 600.0€ (à valider DIM)",
       "valeur_organisationnelle": "5 journées HDJ structurées vs consultations fragmentées",
-      "potentiel_valorisation_a_valider": 2100.0,
+      "potentiel_valorisation_a_valider": 3000.0,
       "unite": "€/période analysée",
       "validation_requise": "DIM + Chef de service",
       "decision_possible": "Ouverture ou consolidation HDJ existant",
@@ -38,9 +38,9 @@
       "description": "Après validation DIM/PMSI du scénario B. Inclut les candidats organisationnels non encore codés en HDJ.",
       "volume_concerne": 33,
       "gain_vs_prudent": 28,
-      "hypothese": "Forfait journalier HDJ = 420.0€ (à valider DIM)",
+      "hypothese": "Forfait journalier HDJ = 600.0€ (à valider DIM)",
       "valeur_organisationnelle": "+28 séjours supplémentaires structurables en HDJ après validation",
-      "potentiel_valorisation_a_valider": 13860.0,
+      "potentiel_valorisation_a_valider": 19800.0,
       "unite": "€/période analysée",
       "validation_requise": "DIM + Chef de service + Direction des opérations + Instruction Gradation DGOS/R1/DSS/1A/2020/52",
       "decision_possible": "Extension HDJ + nouveaux parcours",
@@ -57,7 +57,7 @@
       "description": "Inclut le regroupement des patients récurrents et la création de nouveaux parcours HDJ dédiés. Horizon 12–24 mois.",
       "volume_concerne": 115,
       "lignes_fragmentees": 493,
-      "hypothese": "Potentiel de regroupement estimé sur 115 patients récurrents. Forfait journalier HDJ = 420.0€ (à valider DIM).",
+      "hypothese": "Potentiel de regroupement estimé sur 115 patients récurrents. Forfait journalier HDJ = 600.0€ (à valider DIM).",
       "valeur_organisationnelle": "Réduction de 493 passages fragmentés pour 115 patients",
       "potentiel_valorisation_a_valider": "À calculer avec DIM après définition des protocoles HDJ",
       "unite": "Non chiffrable sans protocoles définis",
@@ -84,5 +84,5 @@
     "anticipation_ressources": "Planification déterministe vs flux imprévu",
     "aide_priorisation_gouvernance": "Dashboard décisionnel avec données réelles"
   },
-  "note_estimation": "Estimation opérationnelle basée sur le forfait journalier HDJ de référence (420.0€/journée). À valider avec le DIM/PMSI avant toute projection financière officielle."
+  "note_estimation": "Estimation opérationnelle basée sur le forfait journalier HDJ de référence (600.0€/journée). À valider avec le DIM/PMSI avant toute projection financière officielle."
 }

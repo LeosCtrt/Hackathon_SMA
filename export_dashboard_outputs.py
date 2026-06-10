@@ -494,7 +494,7 @@ def _build_operational_action_plan(kpis_A: dict, kpis_B: dict, ipp_metrics: dict
                 "action": "Paramétrer le tarif GHS réel dans l'outil",
                 "owner": "DIM/PMSI",
                 "priority": 2,
-                "evidence": "Tarif de référence 420€ utilisé — à remplacer par GHS CHU Guyane validé",
+                "evidence": "Tarif de référence 600€ utilisé — à remplacer par GHS CHU Guyane validé",
                 "next_step": "Récupérer la liste GHS HDJ endocrino auprès du DIM, mettre à jour le paramètre",
                 "timeline": "1–2 semaines",
                 "validation_needed": ["DIM/PMSI"],
@@ -670,7 +670,7 @@ def _generate_decision_note(
 ## CHU Guyane · Endocrinologie-Diabétologie
 
 **Date d'analyse :** 09 juin 2026 · **Version :** 2.0
-**Outil :** HDJ Agent — Système multi-agents d'aide à la décision capacitaire et organisationnelle
+**Outil :** HDJ Agent — système multi-agent d'aide à la décision de gouvernance hospitalière capacitaire et organisationnelle
 **Statut :** Prototype d'aide à la décision — validation médicale, DIM/PMSI et gouvernance hospitalière requises
 
 ---
@@ -772,14 +772,14 @@ Près d'1 patient sur 2 revient plusieurs fois. Ces retours fragmentés représe
 
 ---
 
-## 8. Impact médico-économique (paramètre indicatif : 420 €/journée)
+## 8. Impact médico-économique (paramètre indicatif : 600 €/journée)
 
 *Ce tarif est paramétrable — à remplacer par le GHS HDJ validé DIM/PMSI CHU Guyane.*
 
 | Niveau | Volume | Valorisation indicative | Statut |
 |--------|--------|------------------------|--------|
-| Prudent (A) | {vol_A} journées | ~{vol_A * 420:,} € | À valider DIM |
-| Opérationnel (B) | {vol_B} journées | ~{vol_B * 420:,} € | Validation PMSI requise |
+| Prudent (A) | {vol_A} journées | ~{vol_A * 600:,} € | À valider DIM |
+| Opérationnel (B) | {vol_B} journées | ~{vol_B * 600:,} € | Validation PMSI requise |
 | Transformation | {rec} patients | À calculer | Protocoles à définir |
 
 **Valeur non financière :** réduction des déplacements, meilleure coordination, libération créneaux, amélioration expérience patient chronique.

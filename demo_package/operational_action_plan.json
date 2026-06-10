@@ -57,7 +57,7 @@
       "action": "Paramétrer le tarif GHS réel dans l'outil",
       "owner": "DIM/PMSI",
       "priority": 2,
-      "evidence": "Tarif de référence 420€ utilisé — à remplacer par GHS CHU Guyane validé",
+      "evidence": "Tarif de référence 600€ utilisé — à remplacer par GHS CHU Guyane validé",
       "next_step": "Récupérer la liste GHS HDJ endocrino auprès du DIM, mettre à jour le paramètre",
       "timeline": "1–2 semaines",
       "validation_needed": [

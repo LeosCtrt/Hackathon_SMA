@@ -157,7 +157,7 @@ def reconstruct_patient_pathways(
         })
 
     pathway_summary: Dict[str, Any] = {
-        "analyse": "Reconstruction des parcours fragmentés — données IPP anonymisées",
+        "analyse": "Reconstruction des parcours fragmentés — données réelles",
         "note": "Aucun IPP individuel n'est exposé dans ce rapport.",
         "totaux": {
             "ipp_uniques": n_total,

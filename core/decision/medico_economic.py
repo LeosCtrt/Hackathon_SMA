@@ -42,7 +42,7 @@ def build_medico_economic_estimates(
     kpis_A: Dict[str, Any],
     kpis_B: Dict[str, Any],
     ipp_metrics: Dict[str, Any] | None = None,
-    forfait_hdj_ref: float = 420.0,
+    forfait_hdj_ref: float = 600.0,
     output_path: str | Path = "outputs/medico_economic_estimates.json",
 ) -> Dict[str, Any]:
     """

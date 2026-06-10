@@ -185,7 +185,7 @@ if st.session_state.get("active_dataset_source") == "uploaded":
 
 # ──────────────────────────────────────────────────────────────────────────
 if page == "Synthèse exécutive":
-    st.title("HDJ Agent — Outil hospitalier d'aide à la décision")
+    st.title("HDJ Agent — système multi-agent d'aide à la décision de gouvernance hospitalière capacitaire et organisationnelle")
     st.caption("CHU Guyane · Endocrinologie-Diabétologie · Simulation restructuration ambulatoire")
     render_active_dataset_banner(page_updated=True)
 
@@ -295,7 +295,7 @@ Validation DIM/PMSI réalisable en 4–6 semaines · Aucun investissement équip
     with col_b:
         st.subheader("Pourquoi c'est actionnable maintenant")
         st.markdown("""
-- Données IPP réelles disponibles (2020–2026, 249 patients uniques)
+- Données réelles disponibles (2020–2026, 249 patients uniques)
 - Règles métier centralisées dans `hdj_metier.yaml` (CCAM, CIM-10, durées, ressources)
 - Scénarios reproductibles et paramétrables
 - Note décisionnelle générée automatiquement
@@ -494,7 +494,7 @@ elif page == "Simulateur what-if":
         )
         tariff = st.number_input(
             "Forfait journalier HDJ de référence (€) — à valider DIM",
-            min_value=100, max_value=2000, value=420, step=10
+            min_value=100, max_value=2000, value=600, step=10
         )
 
     _SCENARIO_MAP = {
@@ -734,8 +734,8 @@ elif page == "Impact médico-économique":
 
     user_tariff = st.number_input(
         "Forfait journalier HDJ de référence (€) — paramètre à valider DIM/PMSI CHU Guyane",
-        min_value=100, max_value=2000, value=420, step=10,
-        help="Valeur d'exemple : 420 €. Remplacez par le tarif GHS HDJ validé par votre DIM.",
+        min_value=100, max_value=2000, value=600, step=10,
+        help="Valeur d'exemple : 600 €. Remplacez par le tarif GHS HDJ validé par votre DIM.",
     )
     st.caption(
         f"Ces montants servent à **prioriser l'instruction DIM/PMSI**, "

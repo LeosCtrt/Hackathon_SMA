@@ -2,7 +2,7 @@
 ## CHU Guyane · Endocrinologie-Diabétologie
 
 **Date d'analyse :** 09 juin 2026 · **Version :** 2.0
-**Outil :** HDJ Agent — Système multi-agents d'aide à la décision capacitaire et organisationnelle
+**Outil :** HDJ Agent — système multi-agent d'aide à la décision de gouvernance hospitalière capacitaire et organisationnelle
 **Statut :** Prototype d'aide à la décision — validation médicale, DIM/PMSI et gouvernance hospitalière requises
 
 ---
@@ -104,14 +104,14 @@ Près d'1 patient sur 2 revient plusieurs fois. Ces retours fragmentés représe
 
 ---
 
-## 8. Impact médico-économique (paramètre indicatif : 420 €/journée)
+## 8. Impact médico-économique (paramètre indicatif : 600 €/journée)
 
 *Ce tarif est paramétrable — à remplacer par le GHS HDJ validé DIM/PMSI CHU Guyane.*
 
 | Niveau | Volume | Valorisation indicative | Statut |
 |--------|--------|------------------------|--------|
-| Prudent (A) | 5 journées | ~2,100 € | À valider DIM |
-| Opérationnel (B) | 33 journées | ~13,860 € | Validation PMSI requise |
+| Prudent (A) | 5 journées | ~3,000 € | À valider DIM |
+| Opérationnel (B) | 33 journées | ~19,800 € | Validation PMSI requise |
 | Transformation | 115 patients | À calculer | Protocoles à définir |
 
 **Valeur non financière :** réduction des déplacements, meilleure coordination, libération créneaux, amélioration expérience patient chronique.
