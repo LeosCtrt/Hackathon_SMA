@@ -1,6 +1,47 @@
 # HDJ Agent — Guide de configuration
 
-## CHU Guyane · Endocrinologie-Diabétologie
+## CHU Guyane · Endocrinologie-Diabétologie · Cas pilote
+
+---
+
+## Deux modes d'utilisation
+
+HDJ Agent peut être utilisé de deux façons, selon le besoin.
+
+### A. Depuis Streamlit — simulation en session (rapide)
+
+Streamlit permet de configurer une simulation en session, mais ne modifie pas la configuration métier permanente.
+
+**Ce que vous pouvez faire directement depuis l'interface :**
+
+1. Déposer un fichier Excel ou CSV pseudonymisé
+2. Mapper les colonnes (automatique ou manuel via menus déroulants)
+3. Ajuster les hypothèses de ressources (fauteuils, rétinographe, créneaux) via sliders
+4. Lancer l'analyse et consulter les résultats actifs de la session
+5. Télécharger la note de décision
+
+**Ce que Streamlit ne fait pas :**
+- Le fichier uploadé n'est jamais écrit sur disque — il reste en mémoire de session.
+- Le YAML métier (`core/config/hdj_metier.yaml`) n'est jamais modifié depuis l'interface.
+- Les fichiers sources ne sont pas modifiés.
+- Certaines pages avancées (scénarios, capacité/saturation, impact médico-économique) peuvent afficher les outputs de démonstration si les outputs globaux n'ont pas été régénérés — un bandeau l'indique explicitement.
+
+### B. Par fichiers et YAML — intégration durable
+
+Pour une intégration pérenne dans un autre service ou établissement :
+
+1. Déposer les données pseudonymisées dans `data/`
+2. Renseigner les paramètres locaux dans `core/config/hdj_metier.yaml`
+3. Régénérer les outputs :
+   ```bash
+   python export_dashboard_outputs.py
+   ```
+4. Relancer l'application :
+   ```bash
+   streamlit run streamlit_app.py
+   ```
+
+> **Résumé :** Streamlit = simulation en session. YAML = configuration métier durable.
 
 ---
 
@@ -15,7 +56,7 @@ HDJ Agent repose sur une séparation stricte entre données et règles métier :
 | `data/Données_Externes_*.xlsx` | Données hospitalières pseudonymisées | Non — données sources |
 | `streamlit_app.py` | Interface de visualisation et simulation | Non — ne modifie pas le YAML |
 
-**Règle fondamentale :** L'Excel modèle documente le schéma d'entrée. Le YAML contient toutes les règles métier. Streamlit lit, ne configure pas.
+**Règle fondamentale :** L'Excel modèle documente le schéma d'entrée. Le YAML contient toutes les règles métier. Streamlit lit et simule en session ; il ne reconfigure pas.
 
 ---
 
@@ -28,6 +69,8 @@ pip install -r requirements.txt
 # Dépendances principales :
 # mesa, networkx, pandas, openpyxl, pyyaml, streamlit, matplotlib
 ```
+
+**Note sur les ressources :** L'analyse principale, les exports, les scénarios et la note de décision fonctionnent sur CPU standard. Le GPU n'est pas requis pour l'analyse principale. Il peut être utile uniquement pour la génération et l'affichage de la modélisation visuelle du parcours patient selon l'environnement.
 
 ---
 
@@ -161,42 +204,7 @@ Les données doivent être pseudonymisées avant tout export. Le fichier `HDJ_Ag
 
 ---
 
-## 9. Adapter à un autre établissement
-
-1. **Préparer les données** : exporter depuis le DIM un fichier pseudonymisé conforme au schéma ci-dessus. Utiliser l'onglet `Mapping_Colonnes` de l'Excel modèle pour adapter les noms de colonnes si nécessaire.
-
-2. **Configurer le YAML** : adapter les sections `roles_soignants`, `ressources_hdj`, et `candidate_pathways` à l'organisation de votre unité HDJ.
-
-3. **Vérifier les codes** : mettre à jour `codes_diagnostics` avec les codes CIM-10 de la spécialité concernée.
-
-4. **Générer les outputs** :
-   ```bash
-   python export_dashboard_outputs.py
-   ```
-
-5. **Lancer l'interface** :
-   ```bash
-   streamlit run streamlit_app.py
-   ```
-
-6. **Valider avec le DIM/PMSI** : toute décision de création ou de valorisation d'activité HDJ requiert une validation DIM, médicale et de gouvernance.
-
----
-
-## 10. Données actives dans l'application
-
-Après upload, mapping et lancement de l'analyse dans la page **Paramétrage hospitalier**, les résultats du fichier uploadé deviennent les **résultats actifs de la session Streamlit** :
-
-- Les pages **Synthèse exécutive**, **Qualité des données** et **Fragmentation IPP** affichent les métriques calculées sur le fichier uploadé.
-- Les pages **Scénarios HDJ**, **Capacité / Saturation**, **Priorisation HDJ**, **Impact médico-économique** et **Note de décision** continuent d'afficher les outputs de démonstration, avec un bandeau explicite.
-- Un bouton **"Revenir aux données de démonstration"** apparaît dans la sidebar pour réinitialiser la session.
-- Les fichiers originaux (`Données_Externes_*.xlsx`) ne sont pas modifiés.
-- Le YAML (`core/config/hdj_metier.yaml`) n'est jamais modifié depuis l'interface.
-- Le fichier uploadé reste en mémoire de session — il n'est jamais écrit sur disque.
-
----
-
-## 11. Lancer HDJ Agent depuis l'application
+## 9. Utiliser Streamlit directement — parcours complet
 
 L'interface Streamlit intègre un parcours utilisateur complet dans la page **Paramétrage hospitalier** :
 
@@ -224,27 +232,61 @@ L'interface Streamlit intègre un parcours utilisateur complet dans la page **Pa
 6. **Cliquer sur "Lancer l'analyse HDJ Agent"** (section 4) :
    - L'application vérifie que les colonnes obligatoires sont disponibles.
    - Elle construit un dataframe standardisé en mémoire à partir du mapping.
-   - Elle calcule : nombre de séjours, patients IPP, diagnostics, taux CCAM, durée moyenne, top diagnostics.
+   - Elle calcule : nombre de séjours, patients, diagnostics, taux CCAM, durée moyenne, top diagnostics.
    - Le résumé est stocké en session et affiché en section 5.
 
 7. **Générer les exports globaux** (optionnel) :
    - Le bouton "Générer / actualiser les exports de démonstration" relance `export_dashboard_outputs.py`.
-   - Les 25 fichiers JSON/MD sont mis à jour dans `outputs/`.
+   - Les fichiers JSON/MD sont mis à jour dans `outputs/`.
 
 8. **Consulter les résultats** (section 5) :
    - Métriques clés de l'analyse session.
    - Tableau des exports disponibles dans `outputs/`.
    - Téléchargement de la note de décision en un clic.
 
-> **Rappel :** l'analyse du fichier uploadé reste locale à la session. Les exports dans `outputs/` sont
-> générés indépendamment à partir des données sources et du YAML.
+> **Rappel :** l'analyse du fichier uploadé reste locale à la session. Les exports dans `outputs/` sont générés indépendamment à partir des données sources et du YAML.
 
 ---
 
-## 11. Limites et précautions
+## 10. Adapter à un autre établissement
 
-- **Données sources** : les analyses portent sur des données de type TYPE_SEJOUR=EXT. Aucun GHS HDJ n'est codé dans les sources — le potentiel de valorisation est une estimation à instruire avec le DIM.
+1. **Préparer les données** : exporter depuis le DIM un fichier pseudonymisé conforme au schéma ci-dessus. Utiliser l'onglet `Mapping_Colonnes` de l'Excel modèle pour adapter les noms de colonnes si nécessaire.
+
+2. **Configurer le YAML** : adapter les sections `roles_soignants`, `ressources_hdj`, et `candidate_pathways` à l'organisation de votre unité HDJ.
+
+3. **Vérifier les codes** : mettre à jour `codes_diagnostics` avec les codes CIM-10 de la spécialité concernée.
+
+4. **Générer les outputs** :
+   ```bash
+   python export_dashboard_outputs.py
+   ```
+
+5. **Lancer l'interface** :
+   ```bash
+   streamlit run streamlit_app.py
+   ```
+
+6. **Valider avec le DIM/PMSI** : toute décision de création ou de valorisation d'activité HDJ requiert une validation DIM, médicale et de gouvernance.
+
+---
+
+## 11. Données actives dans l'application
+
+Après upload, mapping et lancement de l'analyse dans la page **Paramétrage hospitalier**, les résultats du fichier uploadé deviennent les **résultats actifs de la session Streamlit** :
+
+- Les pages **Synthèse exécutive**, **Qualité des données** et **Fragmentation** affichent les métriques calculées sur le fichier uploadé.
+- Les pages **Scénarios HDJ**, **Capacité / Saturation**, **Priorisation HDJ**, **Impact médico-économique** et **Note de décision** continuent d'afficher les outputs de démonstration, avec un bandeau explicite.
+- Un bouton **"Revenir aux données de démonstration"** apparaît dans la sidebar pour réinitialiser la session.
+- Les fichiers originaux ne sont pas modifiés.
+- Le YAML (`core/config/hdj_metier.yaml`) n'est jamais modifié depuis l'interface.
+- Le fichier uploadé reste en mémoire de session — il n'est jamais écrit sur disque.
+
+---
+
+## 12. Limites et précautions
+
+- **Données sources** : les analyses portent sur des données pseudonymisées. Aucun GHS HDJ n'est codé dans les sources — le potentiel de valorisation est une estimation à instruire avec le DIM.
 - **Durées des parcours** : issues du YAML métier. À valider avec l'équipe soignante avant toute planification.
-- **Outil d'aide à la décision** : HDJ Agent est un outil de simulation organisationnelle. Il n'est pas un logiciel médical certifié (MDR/CE).
+- **Outil d'aide à la décision** : HDJ Agent est un outil de simulation organisationnelle. Il n'est pas un logiciel médical certifié (MDR/CE). Il ne remplace pas le DIM/PMSI ni la décision médicale.
 - **Validation requise** : validation DIM/PMSI, médicale et de gouvernance avant toute mise en œuvre.
 - **Référentiel réglementaire** : Instruction DGOS/R1/DSS/1A/2020/52 et référentiel PMSI MCO 2026 (en vigueur au 01/03/2026).
