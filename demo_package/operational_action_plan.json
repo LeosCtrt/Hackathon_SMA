@@ -1,0 +1,105 @@
+{
+  "analyse": "Plan d'action opérationnel HDJ — CHU Guyane Endocrino-Diabétologie",
+  "horizon": "0–18 mois",
+  "actions": [
+    {
+      "action": "Valider les cas scénario A avec le DIM",
+      "owner": "DIM/PMSI",
+      "priority": 1,
+      "evidence": "5 séjours identifiés avec référence PMSI solide",
+      "next_step": "Extraire les NUM_SEJOUR scénario A, croiser avec données facturation réelle",
+      "timeline": "0–4 semaines",
+      "validation_needed": [
+        "DIM/PMSI",
+        "Chef de service endocrinologie"
+      ]
+    },
+    {
+      "action": "Lancer pilote HDJ Bilan annuel diabète",
+      "owner": "Chef de service endocrinologie",
+      "priority": 1,
+      "evidence": "12 cas bilan_annuel_diabete identifiés — faisabilité 85%, volume le plus large",
+      "next_step": "Définir protocole HDJ bilan annuel, demander validation Instruction Gradation",
+      "timeline": "4–8 semaines",
+      "validation_needed": [
+        "DIM/PMSI",
+        "Chef de service",
+        "Cadre HDJ"
+      ]
+    },
+    {
+      "action": "Instruire la validation PMSI des 33 cas scénario B",
+      "owner": "DIM/PMSI",
+      "priority": 2,
+      "evidence": "+28 séjours supplémentaires simulés — validation requise",
+      "next_step": "Revue dossiers par dossier avec chef de service",
+      "timeline": "2–3 mois",
+      "validation_needed": [
+        "DIM/PMSI",
+        "Chef de service",
+        "Direction opérations"
+      ]
+    },
+    {
+      "action": "Constituer un groupe de travail récurrents",
+      "owner": "Cadre HDJ",
+      "priority": 2,
+      "evidence": "115 patients récurrents — 493 lignes fragmentées potentiellement regroupables",
+      "next_step": "Identifier les patients récurrents, proposer protocole de journée groupée",
+      "timeline": "3–6 mois",
+      "validation_needed": [
+        "Chef de service",
+        "Cadre HDJ",
+        "DIM/PMSI"
+      ]
+    },
+    {
+      "action": "Paramétrer le tarif GHS réel dans l'outil",
+      "owner": "DIM/PMSI",
+      "priority": 2,
+      "evidence": "Tarif de référence 420€ utilisé — à remplacer par GHS CHU Guyane validé",
+      "next_step": "Récupérer la liste GHS HDJ endocrino auprès du DIM, mettre à jour le paramètre",
+      "timeline": "1–2 semaines",
+      "validation_needed": [
+        "DIM/PMSI"
+      ]
+    },
+    {
+      "action": "Intégrer le module DSI de détection récurrences",
+      "owner": "DSI/Data",
+      "priority": 3,
+      "evidence": "249 IPP uniques analysés manuellement — processus à automatiser",
+      "next_step": "Spécifier l'API de requêtage IPP temps réel depuis le SIH",
+      "timeline": "6–12 mois",
+      "validation_needed": [
+        "DSI/Data",
+        "Direction opérations",
+        "DIM/PMSI"
+      ]
+    },
+    {
+      "action": "Présenter les résultats au comité de direction médicale",
+      "owner": "Direction opérations",
+      "priority": 1,
+      "evidence": "Note de décision complète générée — prête pour présentation",
+      "next_step": "Planifier CME ou COPIL HDJ avec support Streamlit",
+      "timeline": "1–2 semaines",
+      "validation_needed": [
+        "Direction opérations",
+        "Chef de service"
+      ]
+    },
+    {
+      "action": "Déployer l'application Streamlit en intranet",
+      "owner": "DSI/Data",
+      "priority": 3,
+      "evidence": "Application opérationnelle — lecture seule, pas d'IPP brut",
+      "next_step": "Containeriser l'application, déployer sur serveur intranet CHU",
+      "timeline": "6–9 mois",
+      "validation_needed": [
+        "DSI/Data",
+        "Direction opérations"
+      ]
+    }
+  ]
+}

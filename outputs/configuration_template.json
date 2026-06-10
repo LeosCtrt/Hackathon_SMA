@@ -1,0 +1,105 @@
+{
+  "standard_schema": {
+    "NUM SEJOUR": {
+      "role": "Identifiant séjour",
+      "type": "string",
+      "obligatoire": true,
+      "exemple": "2024-000123"
+    },
+    "NUM IPP PATIENT": {
+      "role": "Identifiant patient pseudonymisé",
+      "type": "string",
+      "obligatoire": false,
+      "recommande": true,
+      "anonymisation": "Pseudonymiser ou hasher avant export",
+      "exemple": "IPP-00456"
+    },
+    "CODE DIAG": {
+      "role": "Diagnostic principal CIM-10",
+      "type": "string",
+      "obligatoire": true,
+      "exemple": "E11"
+    },
+    "LISTE ACTES CCAM MVT": {
+      "role": "Actes CCAM du mouvement (séparateur ';')",
+      "type": "string",
+      "obligatoire": false,
+      "recommande": true,
+      "exemple": "BLQP010;YYYY180"
+    },
+    "TYPE SEJOUR": {
+      "role": "Type de séjour (EXT, HDJ, MCO…)",
+      "type": "string",
+      "obligatoire": true,
+      "exemple": "EXT"
+    },
+    "DATE ENTREE SEJ": {
+      "role": "Date d'entrée",
+      "type": "date (AAAA-MM-JJ)",
+      "obligatoire": false,
+      "recommande": true,
+      "exemple": "2024-03-15"
+    },
+    "HEURE ENTREE SEJ": {
+      "role": "Heure d'entrée",
+      "type": "heure (HH:MM)",
+      "obligatoire": false
+    },
+    "HEURE SORTIE SEJ": {
+      "role": "Heure de sortie",
+      "type": "heure (HH:MM)",
+      "obligatoire": false
+    },
+    "CODE ACTE": {
+      "role": "Code acte CCAM principal",
+      "type": "string",
+      "obligatoire": false
+    },
+    "SPECIALITE OPERATEUR": {
+      "role": "Spécialité médicale",
+      "type": "string",
+      "obligatoire": false
+    }
+  },
+  "current_resources": {
+    "fauteuil_medicalise": {
+      "quantite": 2,
+      "source": "hdj_metier.yaml"
+    },
+    "retinographe": {
+      "quantite": 1,
+      "source": "hdj_metier.yaml"
+    },
+    "places_par_creneau": {
+      "valeur": 18,
+      "source": "hdj_metier.yaml"
+    },
+    "horizon_simulation_jours": {
+      "valeur": 5,
+      "source": "hdj_metier.yaml"
+    }
+  },
+  "current_roles": [
+    "IDE",
+    "endocrinologue",
+    "ophtalmologue",
+    "dieteticienne"
+  ],
+  "current_pathways": [
+    "already_hdj",
+    "depistage_retinopathie",
+    "test_dynamique_endocrinien",
+    "etp_diabete_obesite",
+    "bilan_annuel_diabete",
+    "bilan_angiopathies",
+    "bilan_endocrino_metabolique"
+  ],
+  "yaml_source": "core/config/hdj_metier.yaml",
+  "data_contract_source": "HDJ_Agent_modele_donnees.xlsx",
+  "example_data_sources": [
+    "Données_Externes_Endocrino_et_diabéto_2020_2023_A.xlsx",
+    "Données_Externes_Endocrino_et_diabéto_A.xlsx"
+  ],
+  "message": "Template de configuration pour adaptation à un autre établissement. Fournir un export pseudonymisé conforme au standard_schema, un mapping de colonnes, et une description de l'organisation HDJ pour mise à jour du YAML métier.",
+  "architecture_rule": "Excel modèle = contrat de données (colonnes attendues). Excel hospitalier = données pseudonymisées à analyser. YAML = organisation métier (ressources, soignants, parcours, règles). Streamlit = visualisation et simulation (ne modifie pas le YAML)."
+}

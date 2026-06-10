@@ -1,0 +1,65 @@
+{
+  "analyse": "Planning journalier agrégé — Réorganisation cible (B), 5 jours",
+  "note": "Données agrégées — aucun IPP individuel exposé.",
+  "parametres": {
+    "horizon_jours": 5,
+    "fauteuils": 2,
+    "retinographes": 1,
+    "taux_validation_B": 1.0,
+    "mode_priorite": "strategic"
+  },
+  "jours": [
+    {
+      "jour": 1,
+      "sejours_planifies": 14,
+      "parcours": {
+        "already_hdj": 4,
+        "bilan_annuel_diabete": 10
+      },
+      "minutes_fauteuil_utilisees": 720,
+      "minutes_fauteuil_disponibles": 720,
+      "occupation_fauteuil_pct": 100.0
+    },
+    {
+      "jour": 2,
+      "sejours_planifies": 8,
+      "parcours": {
+        "bilan_annuel_diabete": 2,
+        "bilan_endocrino_metabolique": 6
+      },
+      "minutes_fauteuil_utilisees": 660,
+      "minutes_fauteuil_disponibles": 720,
+      "occupation_fauteuil_pct": 91.7
+    },
+    {
+      "jour": 3,
+      "sejours_planifies": 8,
+      "parcours": {
+        "bilan_endocrino_metabolique": 3,
+        "depistage_retinopathie": 1,
+        "etp_diabete_obesite": 4
+      },
+      "minutes_fauteuil_utilisees": 720,
+      "minutes_fauteuil_disponibles": 720,
+      "occupation_fauteuil_pct": 100.0
+    },
+    {
+      "jour": 4,
+      "sejours_planifies": 3,
+      "parcours": {
+        "test_dynamique_endocrinien": 3
+      },
+      "minutes_fauteuil_utilisees": 540,
+      "minutes_fauteuil_disponibles": 720,
+      "occupation_fauteuil_pct": 75.0
+    },
+    {
+      "jour": 5,
+      "sejours_planifies": 0,
+      "parcours": {},
+      "minutes_fauteuil_utilisees": 0,
+      "minutes_fauteuil_disponibles": 720,
+      "occupation_fauteuil_pct": 0.0
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "analyse": "Explicabilité décisionnelle — HDJ Agent",
+  "note": "Chaque recommandation est tracée jusqu'aux données sources et aux règles YAML. Aucune décision médicale ou PMSI n'est prise automatiquement.",
+  "parcours": [
+    {
+      "pathway": "bilan_annuel_diabete",
+      "label": "Bilan annuel diabète",
+      "decision_proposee": "Créer un HDJ Bilan annuel diabète — priorité 1",
+      "signaux_donnees": {
+        "volume": 12,
+        "pct_total": "2.9%",
+        "recurrence": "Principalement des patients récurrents avec bilans annuels répétés",
+        "ressources": "Aucune ressource critique bloquante — fauteuil standard, pas de rétino",
+        "complexite": "Faible — actes standardisés, durée 60 min, protocole reproductible"
+      },
+      "regles_yaml_mobilisees": [
+        "bilan_annuel_diabete CCAM BLQP010",
+        "duree_min: 60",
+        "criticite: haute"
+      ],
+      "validation_requise": [
+        "DIM/PMSI pour codage HDJ",
+        "Chef de service pour protocole"
+      ],
+      "pourquoi_maintenant": "Volume le plus large identifié dans les données (12 cas B). Actes CCAM documentés. Faisabilité opérationnelle maximale (85%). Aucun investissement matériel requis.",
+      "pourquoi_pas_facturable_directement": "Les données source sont TYPE_SEJOUR=EXT — pas de GHS HDJ codé. La reclassification nécessite validation DIM et Instruction Gradation DGOS.",
+      "prochaine_action": "Valider avec DIM les 12 cas B, définir protocole bilan annuel HDJ, lancer pilote."
+    },
+    {
+      "pathway": "bilan_endocrino_metabolique",
+      "label": "Bilan endocrino-métabolique",
+      "decision_proposee": "Créer un HDJ Bilan endocrino-métabolique — priorité 2",
+      "signaux_donnees": {
+        "volume": 9,
+        "pct_total": "2.2%",
+        "recurrence": "Patients chroniques avec suivi endocrino + biologie répété",
+        "ressources": "Multi-soignants — coordination interniste, biologiste, diététicien",
+        "complexite": "Modérée — coordination plus complexe, durée ~90 min"
+      },
+      "regles_yaml_mobilisees": [
+        "diagnostic_code E0x",
+        "multiple_actes_ccam",
+        "duree_min: 90"
+      ],
+      "validation_requise": [
+        "DIM/PMSI",
+        "Chef de service",
+        "Direction opérations"
+      ],
+      "pourquoi_maintenant": "9 cas B identifiés. Valeur stratégique élevée (80%). Peut être couplé au pilote bilan annuel diabète.",
+      "pourquoi_pas_facturable_directement": "Même raison — TYPE_SEJOUR=EXT. Coordination multi-soignants à formaliser.",
+      "prochaine_action": "Inclure dans le groupe de travail HDJ après validation scénario A."
+    },
+    {
+      "pathway": "etp_diabete_obesite",
+      "label": "ETP diabète / obésité",
+      "decision_proposee": "Ouvrir un groupe de travail ETP — priorité 3",
+      "signaux_donnees": {
+        "volume": 4,
+        "pct_total": "1.0%",
+        "recurrence": "Patients obèses / diabétiques avec programmes ETP fragmentés",
+        "ressources": "Diététicienne, salle ETP dédiée, groupe de 4–8 patients",
+        "complexite": "Modérée — format de groupe, réglementé HAS"
+      },
+      "regles_yaml_mobilisees": [
+        "etp_programme CCAM",
+        "salle_etp",
+        "dieteticienne"
+      ],
+      "validation_requise": [
+        "Chef de service",
+        "Cadre HDJ",
+        "DIM/PMSI",
+        "HAS si programme"
+      ],
+      "pourquoi_maintenant": "4 cas B identifiés. ETP diabète/obésité est une priorité nationale de santé publique. Le format groupe réduit la charge soignant par patient.",
+      "pourquoi_pas_facturable_directement": "Programme ETP nécessite autorisation ARS + protocole HAS validé.",
+      "prochaine_action": "Constituer groupe de travail ETP, identifier diététicienne référente."
+    },
+    {
+      "pathway": "recurrent_grouping",
+      "label": "Regroupement patients récurrents",
+      "decision_proposee": "Activer levier transversal anti-fragmentation — après validation parcours prioritaires",
+      "signaux_donnees": {
+        "volume": 115,
+        "pct_total": "46.2%",
+        "recurrence": "115 patients avec > 1 venue — 493 lignes fragmentées",
+        "ressources": "Variable selon pathologie — à déterminer par protocole",
+        "complexite": "Élevée — nécessite module DSI de détection + protocoles individualisés"
+      },
+      "regles_yaml_mobilisees": [
+        "IPP multi-venues",
+        "fragmentation_score > 1"
+      ],
+      "validation_requise": [
+        "Chef de service",
+        "DIM/PMSI",
+        "Cadre HDJ",
+        "DSI/Data"
+      ],
+      "pourquoi_maintenant": "115 patients concernés (493 lignes). Réduction des déplacements inutiles = amélioration qualité de vie patients chroniques.",
+      "pourquoi_pas_facturable_directement": "Pas de protocole HDJ défini pour ce groupe transversal. Chaque patient nécessite une classification par parcours prioritaire.",
+      "prochaine_action": "Activer après validation des parcours A/B. Requête IPP automatique DSI."
+    }
+  ]
+}

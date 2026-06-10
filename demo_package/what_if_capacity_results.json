@@ -1,0 +1,167 @@
+{
+  "analyse": "Simulation what-if capacité HDJ — 8 configurations comparées",
+  "note": "Simulation greedy déterministe. Durées issues du YAML métier. Résultats à valider avec l'équipe soignante et le DIM/PMSI.",
+  "configurations": [
+    {
+      "configuration_id": "baseline_A_5_days",
+      "label": "Scénario prudent (A) — 5 jours",
+      "scenario_base": "baseline_A",
+      "parametres": {
+        "horizon_jours": 5,
+        "fauteuils": 2,
+        "retinographes": 1,
+        "taux_validation_B": 1.0,
+        "mode_priorite": "strategic"
+      },
+      "planned_count": 5,
+      "unplanned_count": 0,
+      "mean_wait_days": 0.0,
+      "max_wait_days": 0,
+      "occupancy_chair_pct": 4.2,
+      "occupancy_retinograph_pct": 0.0,
+      "bottleneck": "Validation organisationnelle / PMSI",
+      "decision_message": "Tous les 5 séjours absorbés sur 5 j. La capacité matérielle est suffisante — le goulot est la validation DIM/PMSI."
+    },
+    {
+      "configuration_id": "target_B_5_days",
+      "label": "Réorganisation cible (B) — 5 jours",
+      "scenario_base": "target_B",
+      "parametres": {
+        "horizon_jours": 5,
+        "fauteuils": 2,
+        "retinographes": 1,
+        "taux_validation_B": 1.0,
+        "mode_priorite": "strategic"
+      },
+      "planned_count": 33,
+      "unplanned_count": 0,
+      "mean_wait_days": 1.0,
+      "max_wait_days": 3,
+      "occupancy_chair_pct": 73.3,
+      "occupancy_retinograph_pct": 5.0,
+      "bottleneck": "Validation organisationnelle / PMSI",
+      "decision_message": "Tous les 33 séjours absorbés sur 5 j. La capacité matérielle est suffisante — le goulot est la validation DIM/PMSI."
+    },
+    {
+      "configuration_id": "target_B_2_days_stress",
+      "label": "Réorganisation cible (B) — stress 2 jours",
+      "scenario_base": "target_B",
+      "parametres": {
+        "horizon_jours": 2,
+        "fauteuils": 2,
+        "retinographes": 1,
+        "taux_validation_B": 1.0,
+        "mode_priorite": "strategic"
+      },
+      "planned_count": 22,
+      "unplanned_count": 11,
+      "mean_wait_days": 0.36,
+      "max_wait_days": 1,
+      "occupancy_chair_pct": 95.8,
+      "occupancy_retinograph_pct": 0.0,
+      "bottleneck": "Horizon de planification trop court",
+      "decision_message": "Saturation : 33% non planifiés (11/33). Augmenter la capacité (fauteuils/horizon) ou lisser sur plusieurs semaines."
+    },
+    {
+      "configuration_id": "target_B_10_days",
+      "label": "Réorganisation cible (B) — horizon 10 jours",
+      "scenario_base": "target_B",
+      "parametres": {
+        "horizon_jours": 10,
+        "fauteuils": 2,
+        "retinographes": 1,
+        "taux_validation_B": 1.0,
+        "mode_priorite": "strategic"
+      },
+      "planned_count": 33,
+      "unplanned_count": 0,
+      "mean_wait_days": 1.0,
+      "max_wait_days": 3,
+      "occupancy_chair_pct": 36.7,
+      "occupancy_retinograph_pct": 2.5,
+      "bottleneck": "Validation organisationnelle / PMSI",
+      "decision_message": "Tous les 33 séjours absorbés sur 10 j. La capacité matérielle est suffisante — le goulot est la validation DIM/PMSI."
+    },
+    {
+      "configuration_id": "target_B_plus_chair",
+      "label": "Réorganisation cible (B) — +1 fauteuil",
+      "scenario_base": "target_B",
+      "parametres": {
+        "horizon_jours": 5,
+        "fauteuils": 3,
+        "retinographes": 1,
+        "taux_validation_B": 1.0,
+        "mode_priorite": "strategic"
+      },
+      "planned_count": 33,
+      "unplanned_count": 0,
+      "mean_wait_days": 0.55,
+      "max_wait_days": 2,
+      "occupancy_chair_pct": 48.9,
+      "occupancy_retinograph_pct": 5.0,
+      "bottleneck": "Validation organisationnelle / PMSI",
+      "decision_message": "Tous les 33 séjours absorbés sur 5 j. La capacité matérielle est suffisante — le goulot est la validation DIM/PMSI."
+    },
+    {
+      "configuration_id": "target_B_plus_retinograph",
+      "label": "Réorganisation cible (B) — +1 rétinographe",
+      "scenario_base": "target_B",
+      "parametres": {
+        "horizon_jours": 5,
+        "fauteuils": 2,
+        "retinographes": 2,
+        "taux_validation_B": 1.0,
+        "mode_priorite": "strategic"
+      },
+      "planned_count": 33,
+      "unplanned_count": 0,
+      "mean_wait_days": 1.0,
+      "max_wait_days": 3,
+      "occupancy_chair_pct": 73.3,
+      "occupancy_retinograph_pct": 2.5,
+      "bottleneck": "Validation organisationnelle / PMSI",
+      "decision_message": "Tous les 33 séjours absorbés sur 5 j. La capacité matérielle est suffisante — le goulot est la validation DIM/PMSI."
+    },
+    {
+      "configuration_id": "recurrent_grouping_5_days",
+      "label": "Regroupement patients récurrents — 5 jours",
+      "scenario_base": "recurrent_grouping",
+      "parametres": {
+        "horizon_jours": 5,
+        "fauteuils": 2,
+        "retinographes": 1,
+        "taux_validation_B": 1.0,
+        "mode_priorite": "strategic"
+      },
+      "planned_count": 56,
+      "unplanned_count": 59,
+      "mean_wait_days": 1.86,
+      "max_wait_days": 4,
+      "occupancy_chair_pct": 98.3,
+      "occupancy_retinograph_pct": 0.0,
+      "bottleneck": "Fauteuil médicalisé",
+      "decision_message": "Saturation : 51% non planifiés (59/115). Augmenter la capacité (fauteuils/horizon) ou lisser sur plusieurs semaines."
+    },
+    {
+      "configuration_id": "recurrent_grouping_10_days",
+      "label": "Regroupement patients récurrents — 10 jours",
+      "scenario_base": "recurrent_grouping",
+      "parametres": {
+        "horizon_jours": 10,
+        "fauteuils": 2,
+        "retinographes": 1,
+        "taux_validation_B": 1.0,
+        "mode_priorite": "strategic"
+      },
+      "planned_count": 96,
+      "unplanned_count": 19,
+      "mean_wait_days": 4.0,
+      "max_wait_days": 9,
+      "occupancy_chair_pct": 99.2,
+      "occupancy_retinograph_pct": 17.5,
+      "bottleneck": "Fauteuil médicalisé",
+      "decision_message": "Saturation : 17% non planifiés (19/115). Augmenter la capacité (fauteuils/horizon) ou lisser sur plusieurs semaines."
+    }
+  ],
+  "interpretation": "Sur le volume B actuel (33 cas), la capacité matérielle est suffisante. La saturation apparaît lors du regroupement des patients récurrents (115 cas) ou en horizon court (2 jours). Le goulot principal reste la validation DIM/PMSI."
+}

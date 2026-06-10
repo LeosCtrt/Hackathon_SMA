@@ -18,13 +18,43 @@ streamlit run streamlit_app.py
 
 ## Sources
 - **Données IPP** : analyse de fragmentation parcours patients (2020–2026)
-- **YAML** : règles métier endocrino (CCAM, CIM-10, durées, pathways, ressources)
-- **Excel** : modèle de structure hospitalière paramétrable (intégration future)
-- **Outputs** : 17 fichiers JSON/CSV + note de décision dans `outputs/`
+- **YAML** `core/config/hdj_metier.yaml` : source de vérité métier (ressources, rôles, parcours, règles PMSI)
+- **Excel modèle** `HDJ_Agent_modele_donnees.xlsx` : contrat de données (colonnes attendues) — aucune règle métier
+- **Outputs** : 24 fichiers JSON/MD dans `outputs/`
 
 ## Positionnement
 Outil opérationnel d'aide à la décision organisationnelle et capacitaire.
 Validation médicale, DIM/PMSI et gouvernance hospitalière requises avant mise en œuvre.
+
+## Configuration pour un autre établissement
+
+Pour adapter HDJ Agent à une autre unité ou spécialité :
+
+1. **Données** — fournir un export pseudonymisé conforme au contrat de données :
+   - Colonnes obligatoires : `NUM SEJOUR`, `CODE DIAG`, `TYPE SEJOUR`
+   - Colonnes recommandées : `NUM IPP PATIENT`, `LISTE ACTES CCAM MVT`, `DATE ENTREE SEJ`
+   - Détail complet dans `HDJ_Agent_modele_donnees.xlsx` (onglets `Colonnes_Attendues` et `Mapping_Colonnes`)
+
+2. **YAML métier** — mettre à jour `core/config/hdj_metier.yaml` :
+   - `ressources_hdj` : nombre de fauteuils, rétinographes, créneaux/jour
+   - `roles_soignants` : composition de l'équipe soignante
+   - `candidate_pathways` : parcours HDJ de la spécialité
+   - `codes_diagnostics` : codes CIM-10 concernés
+
+3. **Générer et lancer** :
+   ```bash
+   python export_dashboard_outputs.py
+   streamlit run streamlit_app.py
+   ```
+
+Dans Streamlit, la page **Paramétrage hospitalier** permet de charger un fichier Excel/CSV pseudonymisé, mapper les colonnes, lancer une analyse et actualiser les résultats actifs de la session.
+
+Guide complet : [`docs/CONFIGURATION_GUIDE.md`](docs/CONFIGURATION_GUIDE.md)
+
+**Architecture de configuration :**
+- Excel modèle = contrat de données (schéma d'entrée)
+- YAML = source de vérité métier (organisation, ressources, parcours)
+- Streamlit = visualisation et simulation (ne modifie pas le YAML)
 
 ---
 

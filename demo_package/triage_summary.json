@@ -1,0 +1,100 @@
+{
+  "analyse": "Triage organisationnel HDJ — règles YAML endocrino-diabétologie",
+  "total_sejours_analyses": 409,
+  "candidats_hdj_actionnables": 26,
+  "pct_actionnables": 6.4,
+  "categories": [
+    {
+      "categorie": "already_hdj",
+      "description": "Séjour déjà structuré en HDJ ou assimilé",
+      "volume": 4,
+      "pct_total": 1.0,
+      "pathways_detectes": {
+        "already_hdj": 4
+      },
+      "ressources_necessaires": {}
+    },
+    {
+      "categorie": "pmsi_guardrail_candidate",
+      "description": "Candidat HDJ avec référence PMSI solide",
+      "volume": 1,
+      "pct_total": 0.2,
+      "pathways_detectes": {
+        "depistage_retinopathie": 1
+      },
+      "ressources_necessaires": {
+        "retinographe": 1
+      }
+    },
+    {
+      "categorie": "target_reorganization_candidate",
+      "description": "Candidat à la réorganisation HDJ — validation PMSI requise",
+      "volume": 21,
+      "pct_total": 5.1,
+      "pathways_detectes": {
+        "bilan_annuel_diabete": 12,
+        "bilan_endocrino_metabolique": 9
+      },
+      "ressources_necessaires": {}
+    },
+    {
+      "categorie": "recurrent_patient_grouping_candidate",
+      "description": "Patient récurrent — potentiel de regroupement",
+      "volume": 0,
+      "pct_total": 0.0,
+      "pathways_detectes": {},
+      "ressources_necessaires": {}
+    },
+    {
+      "categorie": "requires_pmsi_validation",
+      "description": "Signal HDJ identifié mais validation PMSI obligatoire",
+      "volume": 21,
+      "pct_total": 5.1,
+      "pathways_detectes": {
+        "test_dynamique_endocrinien": 17,
+        "etp_diabete_obesite": 4
+      },
+      "ressources_necessaires": {
+        "fauteuil": 17
+      }
+    },
+    {
+      "categorie": "out_of_scope",
+      "description": "Hors périmètre endocrino-diabéto HDJ",
+      "volume": 37,
+      "pct_total": 9.0,
+      "pathways_detectes": {
+        "none": 37
+      },
+      "ressources_necessaires": {}
+    },
+    {
+      "categorie": "insufficient_signal",
+      "description": "Signal insuffisant pour classification HDJ",
+      "volume": 325,
+      "pct_total": 79.5,
+      "pathways_detectes": {
+        "bilan_annuel_diabete": 171,
+        "bilan_endocrino_metabolique": 144,
+        "etp_diabete_obesite": 10
+      },
+      "ressources_necessaires": {}
+    }
+  ],
+  "regles_utilisees": [
+    "R10b — [MCO26]§1.5 : diagnostic seul, aucun acte confirmant → uncertain",
+    "R09a — [DATA] : actes hors scope",
+    "DEFAULT — not_hdj_relevant",
+    "R10a — [MCO26]§1.5 : pathway identifié + dosage présent → candidate_hdj_requires_pmsi_validation",
+    "R05b — [YAML]§tests_dynamiques_endocriniens : diag seul, acte absent",
+    "R07 — [DATA]+[MCO26]§1.1 : unité HDJ explicite",
+    "R11 — [DATA] : unité ETP/diététique",
+    "R04 — [YAML]§bilan_annuel_complications : rétinographe CCAM confirmé"
+  ],
+  "limites": [
+    "Classification basée sur actes CCAM et diagnostics disponibles — absence de données = signal faible, pas forcément hors périmètre",
+    "Instruction Gradation DGOS/R1/DSS/1A/2020/52 non encodée — tous les cas B portent requires_pmsi_validation",
+    "Triage organisationnel uniquement — validation médicale et PMSI requise"
+  ],
+  "note": "Ce triage est un outil d'aide à la décision organisationnelle. Il ne constitue pas une reclassification PMSI ni un acte médical."
+}
