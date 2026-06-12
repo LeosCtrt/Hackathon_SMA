@@ -1383,7 +1383,7 @@ elif page == "Modélisation parcours patient":
     if st.button("Générer / regénérer l'animation", type="primary", key="parcours_regen"):
         with st.spinner("Simulation multi-agents en cours…"):
             _res = _subprocess.run(
-                ["python", "demo_parcours_animation.py",
+                [sys.executable, "demo_parcours_animation.py",
                  "--parcours-type", parcours_type],
                 capture_output=True, text=True, timeout=120,
                 cwd=str(Path(__file__).parent),
