@@ -1251,7 +1251,8 @@ elif page == "Paramétrage hospitalier":
         _tccam = analysis.get("taux_ccam_pct")
         c5.metric("Taux CCAM renseigné", f"{_tccam:.0f} %" if _tccam is not None else "—")
         _dur = analysis.get("duree_moy_min")
-        c6.metric("Durée moy. séjour", f"{int(_dur)} min" if _dur else "—")
+        import math as _math
+        c6.metric("Durée moy. séjour", f"{int(_dur)} min" if _dur and not _math.isnan(_dur) else "—")
 
         top = analysis.get("top_diags") or analysis.get("top_categories_diag", [])
         if top:
