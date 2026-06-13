@@ -1,814 +1,856 @@
-/**
- * src/routes/index.tsx
- */
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import * as XLSX from "xlsx";
+import { useState } from "react";
 import {
-  Area,
-  AreaChart,
-  Bar,
+  Activity,
+  Users,
+  Hospital,
+  Cpu,
+  GitBranch,
+  Layers,
+  Sparkles,
+  Database,
+  Brain,
+  Network,
+  Calendar,
+  TrendingUp,
+  AlertTriangle,
+  CheckCircle2,
+  ArrowUpRight,
+  FileText,
+  Workflow,
+  Stethoscope,
+  Building2,
+} from "lucide-react";
+import {
   BarChart,
-  CartesianGrid,
-  Cell,
-  Legend,
-  Line,
-  LineChart, // Kept per your imports, though AreaChart is primarily used
-  ResponsiveContainer,
-  Tooltip,
+  Bar,
   XAxis,
   YAxis,
+  ResponsiveContainer,
+  Tooltip,
+  LineChart,
+  Line,
+  Area,
+  AreaChart,
+  RadialBarChart,
+  RadialBar,
+  PolarAngleAxis,
 } from "recharts";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Upload,
-  FileSpreadsheet,
-  Play,
-  Pause,
-  RotateCcw,
-  CheckCircle2,
-  Sparkles,
-  TrendingDown,
-  TrendingUp,
-  Activity,
-} from "lucide-react";
+import heroFlow from "@/assets/hero-flow.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "HDJ Agent — Optimisation capacitaire des hôpitaux de jour" },
+      { title: "HDJ Agent — Optimisation des hôpitaux de jour · CHU Guyane" },
       {
         name: "description",
         content:
-          "Système multi-agents de simulation et d'aide à la décision pour la création et l'optimisation des hôpitaux de jour au CHU de Guyane.",
-      },
-      { property: "og:title", content: "HDJ Agent — Simulateur multi-agents" },
-      {
-        property: "og:description",
-        content:
-          "Importez vos données PMSI/CCAM, simulez plusieurs scénarios et visualisez l'impact médico-économique en temps réel.",
+          "Système multi-agents d'aide à la décision pour la création et l'optimisation des hôpitaux de jour. Simulation capacitaire, scénarios médico-économiques, priorisation des parcours.",
       },
     ],
   }),
-  component: HDJAgentApp,
+  component: Showcase,
 });
 
-// ---------- Types ----------
-
-type Scenario = "statu-quo" | "optimisation" | "creation-hdj";
-
-type ScenarioConfig = {
-  id: Scenario;
-  label: string;
-  description: string;
-  waitFactor: number; // multiplier on baseline wait
-  satFactor: number;
-  convertibleFactor: number;
-  revenueFactor: number; // €k
-  color: string;
-};
-
-const SCENARIOS: ScenarioConfig[] = [
-  {
-    id: "statu-quo",
-    label: "Statu Quo (Actuel)",
-    description: "Parcours fragmenté en consultations isolées",
-    waitFactor: 1.0,
-    satFactor: 0.62,
-    convertibleFactor: 0,
-    revenueFactor: 0,
-    color: "#0284c7",
-  },
-  {
-    id: "optimisation",
-    label: "Optimisation Capacitaire",
-    description: "Lissage des flux + ordonnanceur agent",
-    waitFactor: 0.58,
-    satFactor: 0.84,
-    convertibleFactor: 1240,
-    revenueFactor: 740,
-    color: "#10b981",
-  },
-  {
-    id: "creation-hdj",
-    label: "+ Création HDJ Dédié",
-    description: "Nouvelle unité HDJ multi-spécialités",
-    waitFactor: 0.42,
-    satFactor: 0.78,
-    convertibleFactor: 2120,
-    revenueFactor: 1340,
-    color: "#f59e0b",
-  },
+const sections = [
+  { id: "apercu", label: "Aperçu", icon: Activity },
+  { id: "agents", label: "Multi-agents", icon: Network },
+  { id: "kpi", label: "Synthèse", icon: TrendingUp },
+  { id: "scenarios", label: "Scénarios", icon: GitBranch },
+  { id: "capacite", label: "Capacité", icon: Layers },
+  { id: "priorisation", label: "Priorisation", icon: Sparkles },
+  { id: "fragmentation", label: "Fragmentation", icon: Users },
+  { id: "medeco", label: "Médico-éco", icon: TrendingUp },
+  { id: "decision", label: "Décision", icon: FileText },
 ];
 
-type AgentDecision = {
-  id: number;
-  agent: "Triage" | "Ordonnanceur" | "Évaluateur" | "Patient";
-  message: string;
-  tone: "info" | "success" | "warn";
-};
-
-type FluxPoint = {
-  t: string;
-  consultations: number;
-  hdj: number;
-  attente: number;
-};
-
-type ParsedFile = {
-  name: string;
-  rows: number;
-  sheets: string[];
-  specialties: { name: string; volume: number }[];
-};
-
-// ---------- Helpers ----------
-
-function makeFluxPoint(tick: number, scenario: ScenarioConfig): FluxPoint {
-  const hour = 8 + Math.floor((tick * 10) / 60);
-  const minute = (tick * 10) % 60;
-  const baseConsult = 45 + Math.sin(tick / 3) * 18 + Math.random() * 8;
-  const baseHdj = 28 + Math.cos(tick / 4) * 14 + Math.random() * 6;
-  const baseAttente = 38 + Math.sin(tick / 2.5) * 22 + Math.random() * 10;
-  return {
-    t: `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`,
-    consultations: Math.max(0, Math.round(baseConsult * scenario.waitFactor)),
-    hdj: Math.max(0, Math.round(baseHdj * (2 - scenario.waitFactor))),
-    attente: Math.max(0, Math.round(baseAttente * scenario.waitFactor)),
-  };
-}
-
-const DECISION_TEMPLATES: Omit<AgentDecision, "id">[] = [
-  { agent: "Triage", message: "Patient ID-{n} réorienté vers HDJ Gastro (Gain attente: {g}min)", tone: "info" },
-  { agent: "Ordonnanceur", message: "Lissage capacitaire effectué sur Salle 0{r}. Occupation stabilisée à {s}%.", tone: "success" },
-  { agent: "Évaluateur", message: "Seuil de rentabilité atteint pour la création d'une unité HDJ {sp}.", tone: "warn" },
-  { agent: "Patient", message: "Parcours #{n} optimisé — consolidation de {a} actes en une journée.", tone: "success" },
-  { agent: "Triage", message: "Cohorte {sp} regroupable: {a} patients identifiés pour HDJ.", tone: "info" },
-  { agent: "Ordonnanceur", message: "Replanification dynamique — {a} créneaux libérés en après-midi.", tone: "success" },
-];
-
-function makeDecision(id: number): AgentDecision {
-  const tpl = DECISION_TEMPLATES[id % DECISION_TEMPLATES.length];
-  const specialties = ["Onco", "Cardio", "Gastro", "Endocrino", "Pneumo"];
-  return {
-    id,
-    agent: tpl.agent,
-    tone: tpl.tone,
-    message: tpl.message
-      .replace("{n}", String(100 + ((id * 37) % 900)))
-      .replace("{g}", String(8 + ((id * 3) % 22)))
-      .replace("{r}", String(1 + (id % 8)))
-      .replace("{s}", String(78 + (id % 15)))
-      .replace("{a}", String(2 + (id % 6)))
-      .replace("{sp}", specialties[id % specialties.length]),
-  };
-}
-
-// ---------- Main Component ----------
-
-function HDJAgentApp() {
-  const [file, setFile] = useState<ParsedFile | null>(null);
-  const [scenario, setScenario] = useState<Scenario>("optimisation");
-  const [agentsOn, setAgentsOn] = useState({ triage: true, optimisation: true, memoire: false });
-  const [running, setRunning] = useState(false);
-  const [tick, setTick] = useState(0);
-  const [flux, setFlux] = useState<FluxPoint[]>([]);
-  const [decisions, setDecisions] = useState<AgentDecision[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const activeScenario = useMemo(
-    () => SCENARIOS.find((s) => s.id === scenario)!,
-    [scenario],
-  );
-
-  // Seed initial chart
-  useEffect(() => {
-    const seed: FluxPoint[] = [];
-    for (let i = 0; i < 18; i++) seed.push(makeFluxPoint(i, activeScenario));
-    setFlux(seed);
-    setTick(18);
-    const seedDecisions = Array.from({ length: 4 }).map((_, i) => makeDecision(i));
-    setDecisions(seedDecisions);
-  }, [activeScenario]);
-
-  // Simulation loop
-  useEffect(() => {
-    if (!running) return;
-    const id = setInterval(() => {
-      setTick((t) => {
-        const next = t + 1;
-        setFlux((prev) => [...prev.slice(-29), makeFluxPoint(next, activeScenario)]);
-        if (next % 2 === 0) {
-          setDecisions((prev) => [makeDecision(next), ...prev].slice(0, 14));
-        }
-        return next;
-      });
-    }, 900);
-    return () => clearInterval(id);
-  }, [running, activeScenario]);
-
-  const handleFile = useCallback(async (f: File) => {
-    const buf = await f.arrayBuffer();
-    const wb = XLSX.read(buf, { type: "array" });
-    const first = wb.SheetNames[0];
-    const sheet = wb.Sheets[first];
-    const rows: Record<string, unknown>[] = XLSX.utils.sheet_to_json(sheet, { defval: null });
-
-    // Try to detect a specialty / service column
-    const sample = rows[0] ?? {};
-    const keys = Object.keys(sample);
-    const specKey =
-      keys.find((k) => /spéc|specialit|service|unité|unite/i.test(k)) ?? keys[0];
-
-    const counts = new Map<string, number>();
-    for (const r of rows) {
-      const v = String((r as Record<string, unknown>)[specKey] ?? "—").trim() || "—";
-      counts.set(v, (counts.get(v) ?? 0) + 1);
-    }
-    const specialties = [...counts.entries()]
-      .map(([name, volume]) => ({ name: name.slice(0, 18), volume }))
-      .sort((a, b) => b.volume - a.volume)
-      .slice(0, 8);
-
-    setFile({
-      name: f.name,
-      rows: rows.length,
-      sheets: wb.SheetNames,
-      specialties: specialties.length
-        ? specialties
-        : [
-            { name: "Cardiologie", volume: 412 },
-            { name: "Oncologie", volume: 388 },
-            { name: "Endocrinologie", volume: 274 },
-            { name: "Gastro-entéro.", volume: 231 },
-            { name: "Pneumologie", volume: 186 },
-            { name: "Néphrologie", volume: 142 },
-          ],
-    });
-  }, []);
-
-  const onDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      const f = e.dataTransfer.files?.[0];
-      if (f) void handleFile(f);
-    },
-    [handleFile],
-  );
-
-  // KPIs
-  const baselineWait = 52;
-  const kpis = useMemo(() => {
-    const wait = Math.round(baselineWait * activeScenario.waitFactor);
-    const waitDelta = Math.round(((wait - baselineWait) / baselineWait) * 100);
-    return {
-      wait,
-      waitDelta,
-      sat: Math.round(activeScenario.satFactor * 1000) / 10,
-      convertible: activeScenario.convertibleFactor,
-      revenue: activeScenario.revenueFactor,
-    };
-  }, [activeScenario]);
-
-  // Scenario comparison data
-  const comparisonData = useMemo(
-    () =>
-      SCENARIOS.map((s) => ({
-        name: s.label.replace(/\(.*\)/, "").trim(),
-        attente: Math.round(baselineWait * s.waitFactor),
-        occupation: Math.round(s.satFactor * 100),
-        revenus: s.revenueFactor,
-        color: s.color,
-      })),
-    [],
-  );
-
-  const reset = () => {
-    setRunning(false);
-    setTick(0);
-    setFlux([]);
-    setDecisions([]);
-    // re-seed
-    const seed: FluxPoint[] = [];
-    for (let i = 0; i < 18; i++) seed.push(makeFluxPoint(i, activeScenario));
-    setFlux(seed);
-    setTick(18);
-  };
-
+function Showcase() {
+  const [active, setActive] = useState("apercu");
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <div className="flex h-screen w-full overflow-hidden bg-med-surface font-sans text-med-primary">
-        {/* ============ SIDEBAR ============ */}
-        <aside className="hidden w-72 shrink-0 flex-col border-r border-slate-200 bg-white lg:flex">
-          <div className="border-b border-slate-100 p-6">
-            <div className="flex items-center gap-2">
-              <div className="grid size-7 place-items-center rounded-md bg-med-accent">
-                <Activity className="size-4 text-white" strokeWidth={2.5} />
-              </div>
-              <h1 className="text-lg font-bold uppercase tracking-tight text-med-accent">
-                HDJ Agent
-              </h1>
-            </div>
-            <p className="mt-2 text-[11px] font-medium text-slate-400">
-              CHU DE GUYANE • SYSTÈME MULTI-AGENTS
-            </p>
-          </div>
-
-          <div className="flex-1 space-y-8 overflow-y-auto p-6">
-            {/* Upload */}
-            <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Importation Données
-              </label>
-              <div
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={onDrop}
-                onClick={() => fileInputRef.current?.click()}
-                className="group mt-3 cursor-pointer rounded-xl border-2 border-dashed border-slate-200 p-4 text-center transition-colors hover:border-med-accent hover:bg-med-accent-soft/40"
-              >
-                {file ? (
-                  <div className="flex flex-col items-center gap-1">
-                    <FileSpreadsheet className="size-5 text-med-success" />
-                    <div className="truncate text-xs font-semibold text-med-primary" title={file.name}>
-                      {file.name}
-                    </div>
-                    <div className="text-[10px] text-slate-400">
-                      {file.rows.toLocaleString("fr-FR")} parcours • {file.sheets.length} feuille(s)
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center gap-1">
-                    <Upload className="size-5 text-slate-400 group-hover:text-med-accent" />
-                    <div className="text-xs text-slate-500">Glissez votre fichier XLSX</div>
-                    <div className="text-[10px] text-slate-400">PMSI, CCAM, Consultations</div>
-                  </div>
-                )}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".xlsx,.xls"
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) void handleFile(f);
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Agent toggles */}
-            <div className="space-y-3">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Configuration Agents
-              </label>
-              {(
-                [
-                  ["triage", "Agent Triage"],
-                  ["optimisation", "Optimisation IA"],
-                  ["memoire", "Mémoire / Apprentissage"],
-                ] as const
-              ).map(([k, label]) => (
-                <button
-                  key={k}
-                  onClick={() => setAgentsOn((s) => ({ ...s, [k]: !s[k] }))}
-                  className="flex w-full items-center justify-between"
-                >
-                  <span
-                    className={`text-sm ${
-                      agentsOn[k] ? "text-med-primary" : "text-slate-400"
-                    }`}
-                  >
-                    {label}
-                  </span>
-                  <span
-                    className={`relative h-4 w-8 rounded-full transition-colors ${
-                      agentsOn[k] ? "bg-med-accent" : "bg-slate-200"
-                    }`}
-                  >
-                    <span
-                      className={`absolute top-1 size-2 rounded-full bg-white transition-all ${
-                        agentsOn[k] ? "right-1" : "left-1"
-                      }`}
-                    />
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {/* Scenarios */}
-            <div className="space-y-1">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Scénarios
-              </label>
-              {SCENARIOS.map((s) => {
-                const active = scenario === s.id;
-                const accent = s.id === "creation-hdj";
-                return (
-                  <button
-                    key={s.id}
-                    onClick={() => setScenario(s.id)}
-                    className={`block w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                      active
-                        ? "bg-med-accent font-medium text-white shadow-sm"
-                        : accent
-                          ? "font-semibold text-med-success hover:bg-slate-50"
-                          : "text-slate-600 hover:bg-slate-50"
-                    }`}
-                  >
-                    {accent && !active ? "+ " : ""}
-                    {s.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="space-y-2 border-t border-slate-100 p-6">
-            <button
-              onClick={() => setRunning((r) => !r)}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-med-primary py-3 text-sm font-bold tracking-wide text-white transition-all hover:bg-slate-800 active:scale-[0.98]"
-            >
-              {running ? (
-                <>
-                  <Pause className="size-4" /> PAUSE SIMULATION
-                </>
-              ) : (
-                <>
-                  <Play className="size-4" /> LANCER SIMULATION
-                </>
-              )}
-            </button>
-            <button
-              onClick={reset}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-50"
-            >
-              <RotateCcw className="size-3" /> Réinitialiser
-            </button>
-          </div>
-        </aside>
-
-        {/* ============ MAIN ============ */}
-        <main className="flex-1 overflow-y-auto p-6 md:p-8">
-          <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight">Tableau de Bord Décisionnel</h2>
-              <p className="text-slate-500">
-                Analyse des flux ambulatoires et trajectoires patients
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <span
-                className={`flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-bold uppercase ${
-                  running
-                    ? "border-med-success/20 bg-med-success/10 text-med-success"
-                    : "border-slate-200 bg-slate-50 text-slate-500"
-                }`}
-              >
-                <span
-                  className={`size-1.5 rounded-full ${
-                    running ? "animate-pulse bg-med-success" : "bg-slate-400"
-                  }`}
-                />
-                {running ? "Simulation en cours" : "Système opérationnel"}
-              </span>
-            </div>
-          </header>
-
-          {/* KPIs */}
-          <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
-            <KpiCard
-              label="Attente Moyenne"
-              value={`${kpis.wait} min`}
-              delta={
-                kpis.waitDelta < 0
-                  ? { text: `${kpis.waitDelta}% vs Statu Quo`, tone: "good" }
-                  : { text: "Référence", tone: "neutral" }
-              }
-              icon={<TrendingDown className="size-4" />}
-            />
-            <KpiCard
-              label="Saturation HDJ"
-              value={`${kpis.sat}%`}
-              delta={
-                kpis.sat > 85
-                  ? { text: "Zone de vigilance", tone: "warn" }
-                  : kpis.sat > 70
-                    ? { text: "Optimum", tone: "good" }
-                    : { text: "Sous-utilisation", tone: "warn" }
-              }
-              bar={kpis.sat}
-            />
-            <KpiCard
-              label="Actes Convertibles"
-              value={kpis.convertible ? kpis.convertible.toLocaleString("fr-FR") : "—"}
-              delta={
-                kpis.convertible
-                  ? { text: "Potentiel de création", tone: "info" }
-                  : { text: "Activité de référence", tone: "neutral" }
-              }
-              icon={<Sparkles className="size-4" />}
-            />
-            <KpiCard
-              label="Impact Valorisation"
-              value={kpis.revenue ? `+${kpis.revenue}k€` : "—"}
-              delta={{ text: "Projection annuelle", tone: "info" }}
-              highlight
-              icon={<TrendingUp className="size-4" />}
-            />
-          </div>
-
-          {/* Live flux + decisions */}
-          <div className="mb-8 grid grid-cols-1 gap-6 xl:grid-cols-3">
-            <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm xl:col-span-2">
-              <div className="flex items-center justify-between border-b border-slate-50 p-4">
-                <span className="text-xs font-bold uppercase tracking-widest text-slate-500">
-                  Flux Dynamique des Agents Patients
-                </span>
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`size-2 rounded-full ${
-                      running ? "animate-pulse bg-med-accent" : "bg-slate-300"
-                    }`}
-                  />
-                  <span className="text-[10px] uppercase tracking-wider text-slate-400">
-                    {running ? "Live simulation" : "En attente"}
-                  </span>
-                </div>
-              </div>
-              <div className="h-[320px] w-full p-2">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={flux} margin={{ top: 16, right: 20, bottom: 8, left: 0 }}>
-                    <defs>
-                      <linearGradient id="gradConsult" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#0284c7" stopOpacity={0.4} />
-                        <stop offset="100%" stopColor="#0284c7" stopOpacity={0} />
-                      </linearGradient>
-                      <linearGradient id="gradHdj" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#10b981" stopOpacity={0.4} />
-                        <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid stroke="#f1f5f9" vertical={false} />
-                    <XAxis
-                      dataKey="t"
-                      tick={{ fontSize: 10, fill: "#94a3b8" }}
-                      tickLine={false}
-                      axisLine={{ stroke: "#e2e8f0" }}
-                      interval="preserveStartEnd"
-                    />
-                    <YAxis
-                      tick={{ fontSize: 10, fill: "#94a3b8" }}
-                      tickLine={false}
-                      axisLine={false}
-                      width={32}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        borderRadius: 12,
-                        border: "1px solid #e2e8f0",
-                        fontSize: 12,
-                      }}
-                    />
-                    <Legend
-                      iconType="circle"
-                      wrapperStyle={{ fontSize: 11, paddingTop: 4 }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="consultations"
-                      name="Consultations"
-                      stroke="#0284c7"
-                      strokeWidth={2}
-                      fill="url(#gradConsult)"
-                      isAnimationActive={false}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="hdj"
-                      name="HDJ"
-                      stroke="#10b981"
-                      strokeWidth={2}
-                      fill="url(#gradHdj)"
-                      isAnimationActive={false}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="attente"
-                      name="File d'attente"
-                      stroke="#f59e0b"
-                      strokeWidth={2}
-                      dot={false}
-                      isAnimationActive={false}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            {/* Decisions feed */}
-            <div className="flex flex-col rounded-2xl border border-slate-100 bg-white shadow-sm">
-              <div className="border-b border-slate-50 p-4">
-                <span className="text-xs font-bold uppercase tracking-widest text-slate-500">
-                  Décisions Agents
-                </span>
-              </div>
-              <div className="flex-1 space-y-3 overflow-y-auto p-4" style={{ maxHeight: 320 }}>
-                <AnimatePresence initial={false}>
-                  {decisions.map((d) => (
-                    <motion.div
-                      key={d.id}
-                      layout
-                      initial={{ opacity: 0, y: -6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0 }}
-                      className="flex gap-3"
-                    >
-                      <div
-                        className={`mt-1.5 size-2 shrink-0 rounded-full ${
-                          d.tone === "success"
-                            ? "bg-med-success"
-                            : d.tone === "warn"
-                              ? "bg-med-amber"
-                              : "bg-med-accent"
-                        }`}
-                      />
-                      <div>
-                        <p className="text-xs font-semibold">Agent {d.agent}</p>
-                        <p className="text-[11px] leading-relaxed text-slate-500">{d.message}</p>
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-                {decisions.length === 0 && (
-                  <p className="text-center text-[11px] text-slate-400">
-                    Lancez la simulation pour observer les décisions des agents.
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom analysis */}
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-sm font-bold">Distribution des Actes par Spécialité</h3>
-                {file && (
-                  <span className="flex items-center gap-1 text-[10px] font-medium uppercase text-med-success">
-                    <CheckCircle2 className="size-3" /> Source: {file.name}
-                  </span>
-                )}
-              </div>
-              <div className="h-56">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={
-                      file?.specialties ?? [
-                        { name: "Cardiologie", volume: 412 },
-                        { name: "Oncologie", volume: 388 },
-                        { name: "Endocrinologie", volume: 274 },
-                        { name: "Gastro", volume: 231 },
-                        { name: "Pneumologie", volume: 186 },
-                        { name: "Néphrologie", volume: 142 },
-                      ]
-                    }
-                    margin={{ top: 8, right: 8, left: -16, bottom: 0 }}
-                  >
-                    <CartesianGrid stroke="#f1f5f9" vertical={false} />
-                    <XAxis
-                      dataKey="name"
-                      tick={{ fontSize: 10, fill: "#94a3b8" }}
-                      tickLine={false}
-                      axisLine={{ stroke: "#e2e8f0" }}
-                      interval={0}
-                      angle={-20}
-                      textAnchor="end"
-                      height={50}
-                    />
-                    <YAxis tick={{ fontSize: 10, fill: "#94a3b8" }} tickLine={false} axisLine={false} />
-                    <Tooltip
-                      contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 }}
-                    />
-                    <Bar dataKey="volume" fill="#0284c7" radius={[6, 6, 0, 0]}>
-                      {(file?.specialties ?? []).map((_, i) => (
-                        <Cell
-                          key={i}
-                          fill={i === 0 ? "#0f172a" : i < 3 ? "#0284c7" : "#7dd3fc"}
-                        />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-sm font-bold">Comparaison des Scénarios</h3>
-              <div className="h-56">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={comparisonData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-                    <CartesianGrid stroke="#f1f5f9" vertical={false} />
-                    <XAxis
-                      dataKey="name"
-                      tick={{ fontSize: 10, fill: "#94a3b8" }}
-                      tickLine={false}
-                      axisLine={{ stroke: "#e2e8f0" }}
-                    />
-                    <YAxis tick={{ fontSize: 10, fill: "#94a3b8" }} tickLine={false} axisLine={false} />
-                    <Tooltip
-                      contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 }}
-                    />
-                    <Legend iconType="circle" wrapperStyle={{ fontSize: 11 }} />
-                    <Bar dataKey="attente" name="Attente (min)" fill="#f59e0b" radius={[6, 6, 0, 0]} />
-                    <Bar dataKey="occupation" name="Occupation (%)" fill="#0284c7" radius={[6, 6, 0, 0]} />
-                    <Bar dataKey="revenus" name="Revenus (k€)" fill="#10b981" radius={[6, 6, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="mt-3 grid grid-cols-3 gap-2">
-                {comparisonData.map((s) => (
-                  <div
-                    key={s.name}
-                    className={`rounded-lg border p-2 text-center ${
-                      s.name.toLowerCase().includes(activeScenario.label.split(" ")[0].toLowerCase())
-                        ? "border-med-accent bg-med-accent-soft"
-                        : "border-slate-100"
-                    }`}
-                  >
-                    <div className="truncate text-[10px] font-semibold uppercase text-slate-500">
-                      {s.name}
-                    </div>
-                    <div className="text-sm font-bold text-med-primary">
-                      {s.revenus ? `+${s.revenus}k€` : "—"}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <footer className="mt-10 border-t border-slate-200 pt-4 text-center text-[10px] uppercase tracking-widest text-slate-400">
-            HDJ Agent • Système multi-agents d'aide à la décision — CHU de Guyane
-          </footer>
+    <div className="min-h-screen bg-background text-foreground">
+      <Header />
+      <div className="mx-auto flex max-w-[1400px] gap-8 px-6 py-8 lg:px-10">
+        <SideNav active={active} setActive={setActive} />
+        <main className="min-w-0 flex-1 space-y-24 pb-32">
+          <Hero />
+          <Section id="agents" eyebrow="Architecture Mesa + NetworkX" title="Cinq agents, une chaîne décisionnelle">
+            <Agents />
+          </Section>
+          <Section id="kpi" eyebrow="Synthèse exécutive" title="Chiffres clés de la simulation">
+            <Kpis />
+          </Section>
+          <Section id="scenarios" eyebrow="Comparaison" title="Trois scénarios d'organisation">
+            <Scenarios />
+          </Section>
+          <Section id="capacite" eyebrow="What-if" title="Simulateur de capacité HDJ">
+            <Capacite />
+          </Section>
+          <Section
+            id="priorisation"
+            eyebrow="Score multicritère — volume (30%) · faisabilité (15%) · valeur stratégique (20%)"
+            title="Parcours HDJ prioritaires"
+          >
+            <Priorisation />
+          </Section>
+          <Section id="fragmentation" eyebrow="Parcours patients" title="Fragmentation des venues">
+            <Fragmentation />
+          </Section>
+          <Section id="medeco" eyebrow="Impact" title="Estimation médico-économique">
+            <MedEco />
+          </Section>
+          <Section id="decision" eyebrow="Livrable" title="Note de décision hospitalière">
+            <Decision />
+          </Section>
+          <Footer />
         </main>
       </div>
     </div>
   );
 }
 
-// ---------- KPI Card Component ----------
+function Header() {
+  return (
+    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-4 lg:px-10">
+        <div className="flex items-center gap-3">
+          <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary text-primary-foreground">
+            <Hospital className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="text-sm font-semibold tracking-tight">HDJ Agent</div>
+            <div className="text-xs text-muted-foreground">CHU Guyane · Endocrino-Diabétologie</div>
+          </div>
+        </div>
+        <nav className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
+          <a href="#agents" className="hover:text-foreground">
+            Agents
+          </a>
+          <a href="#scenarios" className="hover:text-foreground">
+            Scénarios
+          </a>
+          <a href="#capacite" className="hover:text-foreground">
+            Capacité
+          </a>
+          <a href="#decision" className="hover:text-foreground">
+            Décision
+          </a>
+        </nav>
+        <div className="flex items-center gap-2">
+          <span className="hidden rounded-full bg-success/10 px-3 py-1 text-xs font-medium text-success md:inline">
+            ● Prototype actif
+          </span>
+        </div>
+      </div>
+    </header>
+  );
+}
 
-function KpiCard({
+function SideNav({ active, setActive }: { active: string; setActive: (s: string) => void }) {
+  return (
+    <aside className="hidden w-56 shrink-0 lg:block">
+      <div className="sticky top-24 space-y-1">
+        <div className="px-3 pb-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Navigation
+        </div>
+        {sections.map((s) => {
+          const Icon = s.icon;
+          const isActive = active === s.id;
+          return (
+            <a
+              key={s.id}
+              href={`#${s.id}`}
+              onClick={() => setActive(s.id)}
+              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${
+                isActive
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              {s.label}
+            </a>
+          );
+        })}
+        <div className="mt-6 rounded-xl border border-border bg-card p-4">
+          <div className="text-xs font-semibold text-foreground">Source des données</div>
+          <div className="mt-1 text-xs text-muted-foreground">
+            TYPE_SEJOUR=EXT · 627 lignes · 369 IPP · couverture CCAM 39% · validation DIM/PMSI requise.
+          </div>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+function Hero() {
+  return (
+    <section id="apercu" className="relative overflow-hidden rounded-3xl border border-border bg-card">
+      <div className="grid gap-0 md:grid-cols-[1.1fr_0.9fr]">
+        <div className="space-y-6 p-10 lg:p-14">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-3 py-1 text-xs">
+            <Sparkles className="h-3 w-3 text-accent" />
+            Défi 5 · Hôpitaux de jour · CHU Guyane
+          </div>
+          <h1 className="text-5xl leading-[1.02] lg:text-6xl">
+            Le jumeau organisationnel
+            <br />
+            <em className="text-accent">des hôpitaux de jour.</em>
+          </h1>
+          <p className="max-w-xl text-base leading-relaxed text-muted-foreground">
+            Cinq agents Mesa (Patient, Soignant, Environnement, Triage, Coordinateur) analysent 409 séjours réels
+            2020–2026, détectent 94 patients récurrents, simulent 8 configurations capacitaires et produisent une note
+            de décision actionnelle — pour aider la gouvernance à instruire la création des HDJ endocrino-diabéto.
+          </p>
+          <div className="flex flex-wrap gap-3 pt-2">
+            <a
+              href="#scenarios"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+            >
+              Explorer les scénarios <ArrowUpRight className="h-4 w-4" />
+            </a>
+            <a
+              href="#agents"
+              className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-5 py-3 text-sm font-medium hover:bg-muted"
+            >
+              Architecture des agents
+            </a>
+          </div>
+          <div className="grid grid-cols-3 gap-6 border-t border-border pt-6">
+            <Stat value="369" label="Patients IPP" />
+            <Stat value="5" label="Agents Mesa" />
+            <Stat value="3" label="Scénarios comparés" />
+          </div>
+        </div>
+        <div className="relative min-h-[320px] overflow-hidden bg-secondary md:min-h-full">
+          <img
+            src={heroFlow}
+            alt="Flux des parcours patients"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-card/40" />
+          <div className="absolute bottom-6 right-6 max-w-[240px] rounded-xl bg-card/95 p-4 shadow-lg backdrop-blur">
+            <div className="text-xs font-medium text-muted-foreground">Gain réorganisation</div>
+            <div className="mt-1 text-3xl font-semibold text-foreground">
+              +28<span className="text-base text-muted-foreground"> séj.</span>
+            </div>
+            <div className="mt-1 text-xs text-success">▲ scénario B vs garde-fou PMSI</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <div>
+      <div className="text-3xl font-semibold tracking-tight">{value}</div>
+      <div className="mt-1 text-xs text-muted-foreground">{label}</div>
+    </div>
+  );
+}
+
+function Section({
+  id,
+  eyebrow,
+  title,
+  children,
+}: {
+  id: string;
+  eyebrow: string;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section id={id} className="scroll-mt-24 space-y-6">
+      <div className="flex items-end justify-between gap-6">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-wider text-accent">{eyebrow}</div>
+          <h2 className="mt-2 text-4xl">{title}</h2>
+        </div>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+// ── Agents ────────────────────────────────────────────────────────────────
+const agents = [
+  {
+    icon: Users,
+    name: "Agent Patient",
+    desc: "Parcours physique simulé dans l'HDJ (salle → salle). États TRANSIT / ATTENTE_SOIN / SOIN / TERMINÉ. Mesure les temps de passage et les attentes réelles.",
+    color: "bg-accent/10 text-accent",
+  },
+  {
+    icon: Stethoscope,
+    name: "Agent Soignant",
+    desc: "IDE, endocrinologue, ophtalmologue, diététicienne — rôle et salle assignés depuis le YAML métier. Modélise la disponibilité soignante et les goulots humains.",
+    color: "bg-primary/10 text-primary",
+  },
+  {
+    icon: Building2,
+    name: "Agent Environnement",
+    desc: "Horaires, retards, indisponibilités, saturation — gestionnaire global du modèle Mesa. Jumeau des contraintes opérationnelles : ouverture/fermeture service, alertes capacitaires.",
+    color: "bg-coral/10 text-coral",
+  },
+  {
+    icon: GitBranch,
+    name: "Agent Triage",
+    desc: "Classe chaque séjour en 7 catégories décisionnelles (already_hdj, pmsi_guardrail, réorganisation_cible, récurrents, hors_périmètre…). Règles CCAM/CIM-10 centralisées dans le YAML métier.",
+    color: "bg-success/10 text-success",
+  },
+  {
+    icon: Workflow,
+    name: "Coordinateur / Scheduler",
+    desc: "Ordonnanceur greedy — planifie les scénarios A (5 séjours) et B (33 séjours) sur horizon paramétrable. Affecte fauteuil médicalisé et rétinographe, calcule les KPIs, détecte les saturations.",
+    color: "bg-warning/15 text-warning-foreground",
+  },
+];
+
+function Agents() {
+  return (
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {agents.map((a) => {
+        const Icon = a.icon;
+        return (
+          <div
+            key={a.name}
+            className="group rounded-2xl border border-border bg-card p-6 transition hover:border-accent/40 hover:shadow-lg"
+          >
+            <div className={`mb-4 grid h-11 w-11 place-items-center rounded-lg ${a.color}`}>
+              <Icon className="h-5 w-5" />
+            </div>
+            <div className="text-base font-semibold">{a.name}</div>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{a.desc}</p>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── KPIs ──────────────────────────────────────────────────────────────────
+function Kpis() {
+  const data = [
+    { mois: "Jan", consult: 412, hdj: 38 },
+    { mois: "Fév", consult: 398, hdj: 41 },
+    { mois: "Mar", consult: 445, hdj: 52 },
+    { mois: "Avr", consult: 430, hdj: 64 },
+    { mois: "Mai", consult: 461, hdj: 73 },
+    { mois: "Juin", consult: 422, hdj: 81 },
+  ];
+  return (
+    <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+      <div className="grid grid-cols-2 gap-4">
+        <Kpi label="Séjours analysés" value="409" trend="2020–2026" />
+        <Kpi label="Patients pseudonymisés" value="369" trend="IPP uniques" />
+        <Kpi label="Scénario prudent (A)" value="5" trend="garde-fou PMSI" />
+        <Kpi label="Réorganisation (B)" value="33" trend="+28 séj. vs A" highlight />
+      </div>
+      <div className="rounded-2xl border border-border bg-card p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-sm font-semibold">Potentiel de conversion consultations → HDJ</div>
+            <div className="text-xs text-muted-foreground">Projection illustrative — 409 séjours EXT analysés</div>
+          </div>
+          <div className="text-xs text-muted-foreground">▲ +560% scén. B vs A</div>
+        </div>
+        <div className="mt-6 h-56">
+          <ResponsiveContainer>
+            <AreaChart data={data}>
+              <defs>
+                <linearGradient id="g1" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stopColor="oklch(0.55 0.13 195)" stopOpacity={0.4} />
+                  <stop offset="100%" stopColor="oklch(0.55 0.13 195)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="mois" stroke="oklch(0.5 0.02 220)" fontSize={11} tickLine={false} axisLine={false} />
+              <YAxis stroke="oklch(0.5 0.02 220)" fontSize={11} tickLine={false} axisLine={false} />
+              <Tooltip
+                contentStyle={{
+                  background: "white",
+                  border: "1px solid oklch(0.9 0.01 95)",
+                  borderRadius: 8,
+                  fontSize: 12,
+                }}
+              />
+              <Area
+                type="monotone"
+                dataKey="consult"
+                stroke="oklch(0.32 0.06 210)"
+                strokeWidth={2}
+                fill="transparent"
+              />
+              <Area type="monotone" dataKey="hdj" stroke="oklch(0.55 0.13 195)" strokeWidth={2.5} fill="url(#g1)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Kpi({
   label,
   value,
-  delta,
-  icon,
-  bar,
+  trend,
   highlight,
 }: {
   label: string;
   value: string;
-  delta: { text: string; tone: "good" | "warn" | "info" | "neutral" };
-  icon?: React.ReactNode;
-  bar?: number;
+  trend?: string;
   highlight?: boolean;
 }) {
-  const toneClass = {
-    good: "text-med-success",
-    warn: "text-med-amber",
-    info: "text-med-accent",
-    neutral: "text-slate-400",
-  }[delta.tone];
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm"
-    >
-      <div className="mb-2 flex items-center justify-between">
-        <div className="text-xs font-bold uppercase text-slate-400">{label}</div>
-        {icon && <span className={toneClass}>{icon}</span>}
-      </div>
-      <div
-        className={`text-3xl font-bold tracking-tight ${
-          highlight ? "text-med-success" : "text-med-primary"
-        }`}
-      >
-        {value}
-      </div>
-      {typeof bar === "number" && (
-        <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-slate-100">
-          <div
-            className="h-full rounded-full bg-med-accent transition-all duration-500"
-            style={{ width: `${Math.min(100, bar)}%` }}
-          />
+    <div className={`rounded-2xl border p-5 ${highlight ? "border-accent/50 bg-accent/5" : "border-border bg-card"}`}>
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="mt-2 text-3xl font-semibold tracking-tight">{value}</div>
+      {trend && <div className={`mt-1 text-xs ${highlight ? "text-accent" : "text-muted-foreground"}`}>{trend}</div>}
+    </div>
+  );
+}
+
+// ── Scénarios ─────────────────────────────────────────────────────────────
+function Scenarios() {
+  const scs = [
+    {
+      tag: "A",
+      title: "Garde-fou PMSI",
+      sej: 5,
+      ret: 3,
+      fau: 0,
+      color: "border-border",
+      desc: "Uniquement les séjours avec référence PMSI solide (already_hdj + convertibles). Démarrage sécurisé, risque réglementaire minimal.",
+    },
+    {
+      tag: "B",
+      title: "Réorganisation cible",
+      sej: 33,
+      ret: 3,
+      fau: 10,
+      color: "border-accent/60 bg-accent/5",
+      desc: "Candidats high + medium potential après validation DIM/PMSI. +28 séjours structurés vs scénario A.",
+      recommended: true,
+    },
+    {
+      tag: "C",
+      title: "Transformation ambulatoire",
+      sej: 94,
+      ret: 10,
+      fau: 30,
+      color: "border-border",
+      desc: "Regroupement des 94 patients récurrents (352 venues fragmentées). Horizon 12–24 mois, protocoles HDJ dédiés à créer.",
+    },
+  ];
+  return (
+    <div className="grid gap-4 md:grid-cols-3">
+      {scs.map((s) => (
+        <div key={s.tag} className={`relative rounded-2xl border-2 bg-card p-6 transition ${s.color}`}>
+          {s.recommended && (
+            <div className="absolute -top-3 left-6 rounded-full bg-accent px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-accent-foreground">
+              Recommandé
+            </div>
+          )}
+          <div className="flex items-baseline justify-between">
+            <div className="font-display text-5xl text-foreground/80">{s.tag}</div>
+            <div className="text-right">
+              <div className="text-3xl font-semibold">{s.sej}</div>
+              <div className="text-xs text-muted-foreground">séjours identifiés</div>
+            </div>
+          </div>
+          <div className="mt-4 text-base font-semibold">{s.title}</div>
+          <p className="mt-2 text-sm text-muted-foreground">{s.desc}</p>
+          <div className="mt-5 space-y-3 border-t border-border pt-4">
+            <OccBar label="Rétinographe" value={s.ret} />
+            <OccBar label="Fauteuil méd." value={s.fau} />
+          </div>
         </div>
-      )}
-      <div className={`mt-2 text-[11px] font-medium ${toneClass}`}>{delta.text}</div>
-    </motion.div>
+      ))}
+    </div>
+  );
+}
+
+function OccBar({ label, value }: { label: string; value: number }) {
+  const color = value > 85 ? "bg-coral" : value > 70 ? "bg-warning" : "bg-success";
+  return (
+    <div>
+      <div className="flex justify-between text-xs">
+        <span className="text-muted-foreground">{label}</span>
+        <span className="font-medium">{value}%</span>
+      </div>
+      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-secondary">
+        <div className={`h-full rounded-full ${color}`} style={{ width: `${value}%` }} />
+      </div>
+    </div>
+  );
+}
+
+// ── Capacité ──────────────────────────────────────────────────────────────
+function Capacite() {
+  // Données réelles — daily_schedule_example.json · Scénario B · 5 jours
+  const data = [
+    { jour: "J1", occ: 100 },
+    { jour: "J2", occ: 92 },
+    { jour: "J3", occ: 100 },
+    { jour: "J4", occ: 75 },
+    { jour: "J5", occ: 0 },
+  ];
+  const radial = [{ name: "Moy. B", value: 73, fill: "oklch(0.55 0.13 195)" }];
+  return (
+    <div className="grid gap-4 lg:grid-cols-3">
+      <div className="rounded-2xl border border-border bg-card p-6 lg:col-span-2">
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <div className="text-sm font-semibold">Planning journalier simulé — Scénario B</div>
+            <div className="text-xs text-muted-foreground">
+              Occupation fauteuil médicalisé · 33 séjours sur 5 jours · ordonnancement greedy
+            </div>
+          </div>
+          <div className="flex gap-4 text-xs">
+            <Legend dot="bg-accent" label="Occupation" />
+            <Legend dot="bg-coral" label="Saturation (≥90%)" />
+          </div>
+        </div>
+        <div className="h-64">
+          <ResponsiveContainer>
+            <BarChart data={data}>
+              <XAxis dataKey="jour" stroke="oklch(0.5 0.02 220)" fontSize={11} tickLine={false} axisLine={false} />
+              <YAxis stroke="oklch(0.5 0.02 220)" fontSize={11} tickLine={false} axisLine={false} domain={[0, 100]} />
+              <Tooltip
+                contentStyle={{
+                  background: "white",
+                  border: "1px solid oklch(0.9 0.01 95)",
+                  borderRadius: 8,
+                  fontSize: 12,
+                }}
+                cursor={{ fill: "oklch(0.96 0.008 95)" }}
+              />
+              <Bar dataKey="occ" radius={[6, 6, 0, 0]}>
+                {data.map((d, i) => (
+                  <rect key={i} fill={d.occ >= 90 ? "oklch(0.68 0.16 35)" : "oklch(0.55 0.13 195)"} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+      <div className="rounded-2xl border border-border bg-card p-6">
+        <div className="text-sm font-semibold">Occupation moyenne fauteuil</div>
+        <div className="text-xs text-muted-foreground">Scénario B · 5 jours · résultat simulateur</div>
+        <div className="relative mx-auto mt-4 h-40 w-40">
+          <ResponsiveContainer>
+            <RadialBarChart innerRadius="70%" outerRadius="100%" data={radial} startAngle={90} endAngle={-270}>
+              <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+              <RadialBar dataKey="value" cornerRadius={20} background={{ fill: "oklch(0.95 0.012 200)" }} />
+            </RadialBarChart>
+          </ResponsiveContainer>
+          <div className="pointer-events-none absolute inset-0 grid place-items-center">
+            <div className="text-center">
+              <div className="text-3xl font-semibold">73%</div>
+              <div className="text-[10px] text-muted-foreground">Moy. scén. B</div>
+            </div>
+          </div>
+        </div>
+        <div className="mt-4 rounded-lg bg-warning/10 px-3 py-2 text-xs text-warning-foreground">
+          <AlertTriangle className="mr-1 inline h-3 w-3" /> J1 et J3 à saturation — lisser sur 10 jours réduit à 37%
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Legend({ dot, label }: { dot: string; label: string }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className={`h-2 w-2 rounded-full ${dot}`} />
+      <span className="text-muted-foreground">{label}</span>
+    </div>
+  );
+}
+
+// ── Priorisation ──────────────────────────────────────────────────────────
+function Priorisation() {
+  const items = [
+    {
+      rank: 1,
+      name: "Bilan annuel diabète",
+      score: 68,
+      vol: "12 séj.",
+      faisa: "85%",
+      tags: ["Faisabilité max", "Sans ressource critique"],
+    },
+    { rank: 2, name: "Bilan endocrino-métabolique", score: 58, vol: "9 séj.", faisa: "70%", tags: ["Multi-soignants"] },
+    {
+      rank: 3,
+      name: "Séjours déjà HDJ (statu quo)",
+      score: 54,
+      vol: "4 séj.",
+      faisa: "95%",
+      tags: ["HDJ existant", "Consolidation"],
+    },
+    {
+      rank: 4,
+      name: "ETP diabète / obésité",
+      score: 49,
+      vol: "4 séj.",
+      faisa: "75%",
+      tags: ["IDE dédié", "Diététicienne"],
+    },
+  ];
+  return (
+    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+      {items.map((it, i) => (
+        <div
+          key={it.rank}
+          className={`flex items-center gap-6 p-5 ${i < items.length - 1 ? "border-b border-border" : ""}`}
+        >
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-secondary font-display text-lg text-primary">
+            {it.rank}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="font-medium">{it.name}</div>
+            <div className="mt-1 flex flex-wrap gap-1.5">
+              {it.tags.map((t) => (
+                <span key={t} className="rounded-full bg-secondary px-2 py-0.5 text-[10px] text-muted-foreground">
+                  {t}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="hidden text-right md:block">
+            <div className="text-xs text-muted-foreground">Volume</div>
+            <div className="text-sm font-medium">{it.vol}</div>
+          </div>
+          <div className="hidden text-right md:block">
+            <div className="text-xs text-muted-foreground">Faisabilité</div>
+            <div className="text-sm font-medium">{it.faisa}</div>
+          </div>
+          <div className="w-32">
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">Score</span>
+              <span className="font-semibold">{it.score}</span>
+            </div>
+            <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-secondary">
+              <div className="h-full rounded-full bg-accent" style={{ width: `${it.score}%` }} />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Fragmentation ─────────────────────────────────────────────────────────
+function Fragmentation() {
+  const data = [
+    { venues: "1", patients: 275 },
+    { venues: "2-3", patients: 72 },
+    { venues: "4-9", patients: 18 },
+    { venues: "10-20", patients: 3 },
+    { venues: "20+", patients: 1 },
+  ];
+  return (
+    <div className="grid gap-4 lg:grid-cols-[1fr_1.2fr]">
+      <div className="rounded-2xl border border-border bg-card p-6">
+        <div className="text-sm font-semibold">Distribution des venues / patient</div>
+        <div className="text-xs text-muted-foreground">369 IPP · 2020–2026</div>
+        <div className="mt-4 h-56">
+          <ResponsiveContainer>
+            <BarChart data={data}>
+              <XAxis dataKey="venues" stroke="oklch(0.5 0.02 220)" fontSize={11} tickLine={false} axisLine={false} />
+              <YAxis stroke="oklch(0.5 0.02 220)" fontSize={11} tickLine={false} axisLine={false} />
+              <Tooltip
+                contentStyle={{
+                  background: "white",
+                  border: "1px solid oklch(0.9 0.01 95)",
+                  borderRadius: 8,
+                  fontSize: 12,
+                }}
+                cursor={{ fill: "oklch(0.96 0.008 95)" }}
+              />
+              <Bar dataKey="patients" fill="oklch(0.32 0.06 210)" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+      <div className="space-y-3">
+        <div className="rounded-2xl border border-border bg-card p-6">
+          <div className="text-sm font-semibold">Segments de fragmentation — triage organisationnel</div>
+          <div className="mt-4 space-y-3">
+            {[
+              {
+                name: "1 venue — pas de fragmentation",
+                pct: 75,
+                color: "bg-primary",
+                note: "275 patients — maintien en externe ou consultation ponctuelle",
+              },
+              {
+                name: "2-3 venues — fragmentation légère",
+                pct: 20,
+                color: "bg-accent",
+                note: "72 patients — éligibilité HDJ à évaluer au cas par cas",
+              },
+              {
+                name: "4+ venues — fragmentation forte",
+                pct: 6,
+                color: "bg-coral",
+                note: "22 patients — regroupement HDJ recommandé ou urgent",
+              },
+            ].map((s) => (
+              <div key={s.name}>
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium">{s.name}</span>
+                  <span className="text-muted-foreground">{s.pct}%</span>
+                </div>
+                <div className="mt-1 h-2 overflow-hidden rounded-full bg-secondary">
+                  <div className={`h-full ${s.color}`} style={{ width: `${s.pct}%` }} />
+                </div>
+                <div className="mt-1 text-xs text-muted-foreground">{s.note}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Médico-éco ────────────────────────────────────────────────────────────
+function MedEco() {
+  return (
+    <div className="grid gap-4 md:grid-cols-3">
+      {[
+        {
+          tag: "Prudent (A)",
+          value: "3 000 €",
+          desc: "Scénario A garde-fou PMSI — 5 journées HDJ structurées × 600 € forfait de référence. Facturation sécurisée, risque réglementaire minimal.",
+          color: "border-border",
+        },
+        {
+          tag: "Opérationnel (B)",
+          value: "19 800 €",
+          desc: "Scénario B après validation DIM/PMSI — 33 séjours × 600 €. +28 journées HDJ supplémentaires vs scénario A.",
+          color: "border-accent/60 bg-accent/5",
+          recommended: true,
+        },
+        {
+          tag: "Transformation (C)",
+          value: "À calculer",
+          desc: "94 patients récurrents (352 venues fragmentées) — protocoles HDJ à définir avec le DIM avant tout chiffrage.",
+          color: "border-border",
+        },
+      ].map((s) => (
+        <div key={s.tag} className={`relative rounded-2xl border-2 bg-card p-6 ${s.color}`}>
+          {s.recommended && (
+            <div className="absolute -top-3 left-6 rounded-full bg-accent px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-accent-foreground">
+              Référence
+            </div>
+          )}
+          <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Estimation {s.tag}</div>
+          <div className="mt-3 font-display text-4xl text-foreground">{s.value}</div>
+          <div className="mt-1 text-xs text-muted-foreground">valorisation indicative · à valider DIM/PMSI</div>
+          <p className="mt-4 text-sm text-muted-foreground">{s.desc}</p>
+        </div>
+      ))}
+      <div className="md:col-span-3 flex items-start gap-3 rounded-xl bg-warning/10 p-4 text-sm">
+        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning-foreground" />
+        <p className="text-warning-foreground">
+          Estimations basées sur un forfait journalier HDJ de référence (600 €) à remplacer par le GHS réel validé par
+          le DIM. Ces montants servent à prioriser l'instruction PMSI, pas à facturer. Données TYPE_SEJOUR=EXT —
+          contexte CHU Guyane, déficit 75 M€.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ── Décision ──────────────────────────────────────────────────────────────
+function Decision() {
+  return (
+    <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
+      <div className="rounded-2xl border border-border bg-card p-8">
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-accent">
+          <FileText className="h-3.5 w-3.5" /> Note de décision · 09 juin 2026
+        </div>
+        <h3 className="mt-3 text-3xl">
+          Démarrer par un pilote HDJ <em>« Bilan annuel diabète »</em>
+        </h3>
+        <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+          Parcours prioritaire identifié dans les données (12 séjours, score multicritère 68/100), faisabilité
+          opérationnelle maximale, validation DIM/PMSI réalisable en 4–6 semaines, aucun investissement équipement
+          requis. Gain projeté : +28 séjours vs scénario garde-fou (A), 19 800 € de valorisation indicative
+          opérationnelle.
+        </p>
+        <div className="mt-6 space-y-2">
+          {[
+            "Présenter ce tableau de bord au comité de direction médicale",
+            "Mandater le DIM pour validation PMSI des cas candidats",
+            "Constituer une équipe pilote IDE + endocrinologue + secrétariat",
+            "Démarrage proposé : T+6 semaines après validation",
+          ].map((step, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <div className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-accent text-[10px] font-semibold text-accent-foreground">
+                {i + 1}
+              </div>
+              <div className="text-sm">{step}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="space-y-4">
+        <div className="rounded-2xl border border-border bg-primary p-6 text-primary-foreground">
+          <Database className="h-5 w-5 opacity-80" />
+          <div className="mt-3 text-sm font-semibold">Stack technologique</div>
+          <div className="mt-3 grid grid-cols-2 gap-2 text-xs opacity-90">
+            {["Mesa", "NetworkX", "Streamlit", "PyYAML", "Pandas", "matplotlib", "openpyxl", "Qdrant ↗"].map((t) => (
+              <div key={t} className="rounded-md bg-primary-foreground/10 px-2.5 py-1.5">
+                {t}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-6">
+          <Cpu className="h-5 w-5 text-accent" />
+          <div className="mt-3 text-sm font-semibold">24 exports disponibles</div>
+          <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+            <li className="flex justify-between">
+              <span>kpi_summary.json</span>
+              <span className="text-xs">2.0 ko</span>
+            </li>
+            <li className="flex justify-between">
+              <span>what_if_capacity_results.json</span>
+              <span className="text-xs">6.2 ko</span>
+            </li>
+            <li className="flex justify-between">
+              <span>pathway_prioritization.json</span>
+              <span className="text-xs">6.5 ko</span>
+            </li>
+            <li className="flex justify-between">
+              <span>note_decision_hospitaliere.md</span>
+              <span className="text-xs">4.8 ko</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="border-t border-border pt-10">
+      <div className="flex flex-col items-start justify-between gap-4 md:flex-row">
+        <div>
+          <div className="text-sm font-semibold">HDJ Agent — Prototype d'aide à la décision</div>
+          <div className="mt-1 text-xs text-muted-foreground">
+            Porté par Ahmed EL-BAHRI & Caroline CARTIER · CHU Guyane · Défi 5 — Hôpitaux de jour.
+          </div>
+        </div>
+        <div className="text-xs text-muted-foreground">
+          Validation DIM/PMSI et gouvernance hospitalière requises avant mise en œuvre.
+        </div>
+      </div>
+    </footer>
   );
 }
