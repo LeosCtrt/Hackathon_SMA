@@ -114,6 +114,13 @@ streamlit run streamlit_app.py
 
 Accessible directement via URL : [https://hdj-equipe5.lovable.app](https://hdj-equipe5.lovable.app) — aucune installation requise.
 
+Pour lancer le site localement :
+```bash
+cd siteweb
+bun install
+bun run dev
+```
+
 ---
 
 ## Architecture multi-agent
